@@ -1,0 +1,1 @@
+rootProject.name = "bl_lab1"
