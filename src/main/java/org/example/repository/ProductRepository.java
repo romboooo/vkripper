@@ -13,4 +13,10 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     // так что переопределять не стал
 
     List<Product> findByProductGroup(ProductGroup group);
+
+    List<Product> findByAvailableTrue();
+
+    List<Product> findByAvailableFalse();
+
+    List<Product> findByProductGroupAndAvailable(ProductGroup group, boolean available);
 }

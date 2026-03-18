@@ -22,6 +22,9 @@ public class Product {
     @Column(name = "price", nullable = false)
     private BigDecimal price;
 
+    @Column(name = "available", nullable = false)
+    private boolean available = true;
+
     @Enumerated(EnumType.STRING)
     @JoinColumn(name = "product_group", nullable = false)
     private ProductGroup productGroup;
