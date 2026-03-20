@@ -2,6 +2,8 @@ package org.example.repository;
 
 import org.example.entity.Product;
 import org.example.entity.ProductGroup;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -9,14 +11,12 @@ import java.util.List;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
-    // если че findAll и findById у тебя уже есть в JpaRepository
-    // так что переопределять не стал
 
-    List<Product> findByProductGroup(ProductGroup group);
+    Page<Product> findByProductGroup(ProductGroup group, Pageable pageable);
 
-    List<Product> findByAvailableTrue();
+    Page<Product> findByAvailableTrue(Pageable pageable);
 
-    List<Product> findByAvailableFalse();
+    Page<Product> findByAvailableFalse(Pageable pageable);
 
-    List<Product> findByProductGroupAndAvailable(ProductGroup group, boolean available);
+    Page<Product> findByProductGroupAndAvailable(ProductGroup group, boolean available, Pageable pageable);
 }
