@@ -13,7 +13,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-
+import java.util.List;
 
 
 @Service
@@ -28,6 +28,17 @@ public class ProductService {
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
         Page<Product> products = productRepository.findByAvailableTrue(pageable);
         return ProductListResponse.fromPage(products);
+    }
+
+    public List<ProductResponse> searchProducts(String keyword) {
+        if (keyword == null || keyword.isBlank()) {
+            return List.of();
+        }
+        return productRepository
+                .findByNameContainingIgnoreCaseAndAvailableTrue(keyword)
+                .stream()
+                .map(ProductResponse::fromProduct)
+                .toList();
     }
 
     public ProductListResponse getProductsByGroup(ProductGroup group, int page, int size) {

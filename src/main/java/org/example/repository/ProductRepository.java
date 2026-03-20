@@ -18,5 +18,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     Page<Product> findByAvailableFalse(Pageable pageable);
 
+    List<Product> findByNameContainingIgnoreCaseAndAvailableTrue(String name);
+
     Page<Product> findByProductGroupAndAvailable(ProductGroup group, boolean available, Pageable pageable);
 }
