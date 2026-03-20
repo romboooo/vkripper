@@ -1,27 +1,28 @@
 package org.example.dto.response;
 
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.example.entity.Product;
+import org.example.entity.Review;
+import org.example.repository.ReviewRepository;
 import org.springframework.data.domain.Page;
+
 import java.util.List;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-public class ProductListResponse {
-
-    private List<ProductResponse> content;
+public class ReviewListResponse {
+    private List<ReviewResponse> content;
     private int page;
     private int size;
     private long totalElements;
     private int totalPages;
     private boolean last;
 
-    public static ProductListResponse fromPage(Page<Product> page) {
-        return new ProductListResponse(
-                page.getContent().stream().map(ProductResponse::fromProduct).toList(),
+    public static ReviewListResponse fromPage(Page<Review> page){
+        return new ReviewListResponse(
+                page.getContent().stream().map(ReviewResponse::fromReview).toList(),
                 page.getNumber(),
                 page.getSize(),
                 page.getTotalElements(),
@@ -29,4 +30,5 @@ public class ProductListResponse {
                 page.isLast()
         );
     }
+
 }
