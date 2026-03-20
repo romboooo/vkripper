@@ -2,6 +2,9 @@ package org.example.entity;
 
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
@@ -9,6 +12,9 @@ import java.time.LocalDateTime;
 @Table(name = "favorites", uniqueConstraints = {
 @UniqueConstraint(columnNames = {"user_id", "product_id"})
 })
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class Favorite {
 
     @Id
