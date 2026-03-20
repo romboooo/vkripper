@@ -1,5 +1,6 @@
 package org.example.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -26,12 +27,14 @@ public class Product {
     private boolean available = true;
 
     @Enumerated(EnumType.STRING)
-    @JoinColumn(name = "product_group", nullable = false)
+    @Column(name = "product_group", nullable = false)
     private ProductGroup productGroup;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "product")
     private List<Review> reviews;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "product")
     private List<Favorite> favorites;
 
