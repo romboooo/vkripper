@@ -2,6 +2,8 @@ package org.example.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -32,6 +34,8 @@ public class Review {
     private String text;
 
     @Column(name = "rating")
+    @Min(1)
+    @Max(5)
     private Integer rating;
 
     @Column(name = "created_at", nullable = false)
