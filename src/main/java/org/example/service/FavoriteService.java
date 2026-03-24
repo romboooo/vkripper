@@ -1,12 +1,8 @@
 package org.example.service;
 
 import jakarta.transaction.Transactional;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
-import org.example.dto.request.FavoriteRequest;
 import org.example.dto.response.FavoriteListResponse;
-import org.example.dto.response.FavoriteResponse;
 import org.example.dto.response.ProductResponse;
 import org.example.entity.Favorite;
 import org.example.entity.Product;
@@ -47,16 +43,16 @@ public class FavoriteService {
 
     public ProductResponse addToFavorite(Long userId, Long productId){
             Product product = productRepository.findById(productId)
-                    .orElseThrow(() -> new RuntimeException("Product not found"));
+                    .orElseThrow(() -> new RuntimeException("Product with id {id} not found"));
             User user = userRepository.findById(userId)
-                    .orElseThrow(()-> new RuntimeException("User not found"));
+                    .orElseThrow(()-> new RuntimeException("User with id {id} not found"));
 
             if (!product.isAvailable()) {
-                throw new RuntimeException("Product is not available");
+                throw new RuntimeException("Product with id {id} is not available");
             }
             boolean exists = favoriteRepository.findByUserAndProduct(user, product).isPresent();
             if (exists) {
-                throw new RuntimeException("Product already in favorites");
+                throw new RuntimeException("Product with id {id} already in favorites");
             }
 
             Favorite favorite = new Favorite();
@@ -66,6 +62,12 @@ public class FavoriteService {
             Favorite savedFavorite = favoriteRepository.save(favorite);
             return ProductResponse.fromProduct(savedFavorite.getProduct());
 
+    }
+
+    public void deleteFromFavorite(Long productId){
+        Favorite favorite = favoriteRepository.findById(productId)
+                .orElseThrow(() ->new RuntimeException("Favorite product with id {id} not found"));
+        favoriteRepository.delete(favorite);
     }
 
 }

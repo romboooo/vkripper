@@ -7,12 +7,8 @@ import lombok.RequiredArgsConstructor;
 import org.example.dto.request.FavoriteRequest;
 import org.example.dto.response.FavoriteListResponse;
 import org.example.dto.response.ProductResponse;
-import org.example.dto.response.UserResponse;
-import org.example.entity.Product;
-import org.example.entity.User;
 import org.example.service.FavoriteService;
 import org.example.service.UserService;
-import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,7 +31,6 @@ public class FavoriteController {
         return ResponseEntity.ok(favoriteService.getCatalog(page, size));
     }
 
-
     @GetMapping("/{id}")
     @Operation(summary = "получить товар из избранного", description = "возвращает товар из избранного")
     public ResponseEntity<ProductResponse> getProduct(
@@ -52,7 +47,14 @@ public class FavoriteController {
             @RequestBody FavoriteRequest request){
         ProductResponse response = favoriteService.addToFavorite(request.getUserId(), request.getProductId());
         return ResponseEntity.ok(response);
-
     }
 
+    @DeleteMapping("/{id}")
+    @Operation(summary = "удалить товар из избранного", description = "удаляет товар из избранных")
+    public ResponseEntity<String> deleteFromFavorite(
+            @Parameter(description = "ID товара")
+            @PathVariable Long id){
+        favoriteService.deleteFromFavorite(id);
+        return ResponseEntity.ok(String.format("deleted product with id %d succesfully", id));
+    }
 }
