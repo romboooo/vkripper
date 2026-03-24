@@ -23,7 +23,7 @@ public class ProductController {
         this.productService = productService;
     }
     @GetMapping
-    @Operation(summary = "Получить каталог товаров", description = "Возвращает список доступных товаров с пагинацией")
+    @Operation(summary = "Получить каталог товаров", description = "Возвращает список доступных товаров")
     public ResponseEntity<ProductListResponse> getCatalog(
             @Parameter(description = "Номер страницы (начинается с 0)")
             @RequestParam(defaultValue = "0") int page,
@@ -60,5 +60,4 @@ public class ProductController {
             @PathVariable Long id) {
         return ResponseEntity.ok(productService.getProductById(id));
     }
-
 }

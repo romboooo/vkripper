@@ -12,11 +12,7 @@ import java.util.List;
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
-    Page<Product> findByProductGroup(ProductGroup group, Pageable pageable);
-
     Page<Product> findByAvailableTrue(Pageable pageable);
-
-    Page<Product> findByAvailableFalse(Pageable pageable);
 
     List<Product> findByNameContainingIgnoreCaseAndAvailableTrue(String name);
 

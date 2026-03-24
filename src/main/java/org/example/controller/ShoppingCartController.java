@@ -7,8 +7,6 @@ import org.example.dto.request.ShoppingCartRequest;
 import org.example.dto.response.ProductResponse;
 import org.example.dto.response.ShoppingCartListResponse;
 import org.example.dto.response.ShoppingCartResponse;
-import org.example.entity.ShoppingCart;
-import org.example.repository.ShoppingCartRepository;
 import org.example.service.ShoppingCartService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,7 +23,7 @@ public class ShoppingCartController {
     }
 
     @GetMapping
-    @Operation(summary = "получить товары в корзине пользователя", description = "возвращает список товаров из корзины пользователя с пагинацией")
+    @Operation(summary = "Получить товары в корзине пользователя", description = "Возвращает список товаров из корзины пользователя с пагинацией")
     public ResponseEntity<ShoppingCartListResponse> getShoppingCart(
             @Parameter(description = "ID пользователя") @RequestParam Long userId,
             @Parameter(description = "Номер страницы (начинается с 0)") @RequestParam(defaultValue = "0") int page,
@@ -56,26 +54,26 @@ public class ShoppingCartController {
     }
 
     @DeleteMapping("/{productId}")
-    @Operation(summary = "удалить товар из корзины пользователя", description = "удаляет товар из корзины конкретного пользователя")
+    @Operation(summary = "Удалить товар из корзины пользователя", description = "Удаляет товар из корзины конкретного пользователя")
     public ResponseEntity<String> removeFromShopping(
             @Parameter(description = "ID продукта") @PathVariable Long productId,
             @Parameter(description = "ID пользователя") @RequestParam Long userId
     ){
         shoppingCartService.deleteFromShoppingCart(userId, productId);
-        return ResponseEntity.ok("удалили товар с id  " + productId + " для пользователя с id" + userId);
+        return ResponseEntity.ok("Удалили товар с id  " + productId + " для пользователя с id" + userId);
     }
 
     @DeleteMapping("/all")
-    @Operation(summary = "очистить корзину пользователя", description = "удаляет все товары из корзины конкретного пользователя")
+    @Operation(summary = "Очистить корзину пользователя", description = "Удаляет все товары из корзины конкретного пользователя")
     public ResponseEntity<String> removeAllFromShoppingCart(
             @Parameter(description = "ID пользователя") @RequestParam Long userId
     ){
         shoppingCartService.removeAllFromShoppingCart(userId);
-        return ResponseEntity.ok("все товары удалились из корзины для пользователя с ID" + userId);
+        return ResponseEntity.ok("Все товары удалились из корзины для пользователя с ID" + userId);
     }
 
     @PostMapping("/favoriteFromCart")
-    @Operation(summary = "добавить товар из корзины в избранное", description = "добавляет товар из корзины конкретного пользователя в избранное")
+    @Operation(summary = "Добавить товар из корзины в избранное", description = "Добавляет товар из корзины конкретного пользователя в избранное")
     public ResponseEntity<String> addToFavoriteFromCart(
             @Parameter(description = "id пользователя")
             @RequestParam Long userId,
@@ -83,11 +81,11 @@ public class ShoppingCartController {
             @RequestParam Long productId
     ){
         shoppingCartService.addToFavoriteFromCart(userId, productId);
-        return ResponseEntity.ok("Product with id " + productId + " added to favorites for user " + userId);
+        return ResponseEntity.ok("Товар с id " + productId + " добавлен в избранное к пользователю с id " + userId);
     }
 
     @PutMapping("/updateAmount")
-    @Operation(summary = "изменить количество товара в корзине", description = "обновляет количество конкретного товара в корзине пользователя")
+    @Operation(summary = "Изменить количество товара в корзине", description = "Обновляет количество конкретного товара в корзине пользователя")
     public ResponseEntity<ShoppingCartResponse> updateCartItemAmount(
             @Parameter(description = "id пользователя")
             @RequestParam Long userId,

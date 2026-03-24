@@ -4,8 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.example.entity.Favorite;
-import org.example.entity.Product;
-import org.example.entity.User;
 
 import java.time.LocalDateTime;
 

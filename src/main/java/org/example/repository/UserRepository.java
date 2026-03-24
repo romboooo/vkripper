@@ -9,7 +9,4 @@ import java.math.BigDecimal;
 import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, Long> {
-    Optional<User> findByUsername(String username);
-    @Query("SELECT u.balance FROM User u WHERE u.id = :userId")
-    BigDecimal getBalanceById(@Param("userId") Long userId);
 }

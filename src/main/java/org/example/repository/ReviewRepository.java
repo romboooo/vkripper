@@ -12,8 +12,5 @@ import java.util.List;
 @Repository
 
 public interface ReviewRepository extends JpaRepository<Review, Long> {
-    List<Review> findByUser(User user);
-
     Page<Review> findByProduct(Product product, Pageable pageable);
-    boolean existsByUserAndProduct(User user, Product product);
 }

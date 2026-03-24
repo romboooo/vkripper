@@ -5,8 +5,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.example.entity.ShoppingCart;
 
-import java.util.List;
-
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
