@@ -20,7 +20,7 @@ public class FavoriteController {
     private final FavoriteService favoriteService;
     private final UserService userService;
 
-    @GetMapping
+    @GetMapping()
     @Operation(summary = "получить список избранного", description = "возвращает список избранных товаров")
     public ResponseEntity<FavoriteListResponse> getFavorites(
             @Parameter(description = "Номер страницы (начинается с нуля)")
@@ -49,12 +49,13 @@ public class FavoriteController {
         return ResponseEntity.ok(response);
     }
 
-    @DeleteMapping("/{id}")
-    @Operation(summary = "удалить товар из избранного", description = "удаляет товар из избранных")
+    @DeleteMapping("/{productId}")
+    @Operation(summary = "удалить товар из избранного пользователя", description = "удаляет товар из избранных конкретного пользователя")
     public ResponseEntity<String> deleteFromFavorite(
-            @Parameter(description = "ID товара")
-            @PathVariable Long id){
-        favoriteService.deleteFromFavorite(id);
-        return ResponseEntity.ok(String.format("deleted product with id %d succesfully", id));
+            @Parameter(description = "ID продукта") @PathVariable Long productId,
+            @Parameter(description = "ID пользователя") @RequestParam Long userId
+    ){
+        favoriteService.deleteFromFavorite(userId, productId);
+        return ResponseEntity.ok("удалили товар с id " + productId + " от пользователя с id " + userId);
     }
 }

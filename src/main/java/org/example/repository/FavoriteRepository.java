@@ -15,5 +15,9 @@ import java.util.Optional;
 public interface FavoriteRepository extends JpaRepository<Favorite, Long> {
     List<Favorite> findByUser(User user);
     Optional<Favorite> findByUserAndProduct(User user, Product product);
-    void deleteByUserAndProduct(User user, Product product); // из корзины типо
+    Optional<Favorite> findByUserIdAndProductId(Long userId, Long productId);
+
+
+    boolean existsByUserIdAndProductId(Long userId, Long productId);
+
 }

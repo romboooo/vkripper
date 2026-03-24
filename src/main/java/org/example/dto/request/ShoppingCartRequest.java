@@ -6,8 +6,6 @@ import org.example.entity.User;
 
 @Data
 public class ShoppingCartRequest {
-    private Long id;
-    private int amount;
-    private Product product;
-    private User user;
+    private Long userId;
+    private Long productId;
 }

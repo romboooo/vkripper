@@ -43,16 +43,18 @@ public class FavoriteService {
 
     public ProductResponse addToFavorite(Long userId, Long productId){
             Product product = productRepository.findById(productId)
-                    .orElseThrow(() -> new RuntimeException("Product with id {id} not found"));
+                    .orElseThrow(() -> new RuntimeException("Product with id " + productId + " not found"));
+
             User user = userRepository.findById(userId)
-                    .orElseThrow(()-> new RuntimeException("User with id {id} not found"));
+                    .orElseThrow(()-> new RuntimeException("User with id " +userId + " not found"));
+
 
             if (!product.isAvailable()) {
-                throw new RuntimeException("Product with id {id} is not available");
+                throw new RuntimeException("Product with id" + productId+ " is not available");
             }
             boolean exists = favoriteRepository.findByUserAndProduct(user, product).isPresent();
             if (exists) {
-                throw new RuntimeException("Product with id {id} already in favorites");
+                throw new RuntimeException("Product with id " + productId + "  already in favorites");
             }
 
             Favorite favorite = new Favorite();
@@ -64,9 +66,12 @@ public class FavoriteService {
 
     }
 
-    public void deleteFromFavorite(Long productId){
-        Favorite favorite = favoriteRepository.findById(productId)
-                .orElseThrow(() ->new RuntimeException("Favorite product with id {id} not found"));
+    public void deleteFromFavorite(Long userId, Long productId){
+        Favorite favorite = favoriteRepository
+                .findByUserIdAndProductId(userId, productId)
+                .orElseThrow(() -> new RuntimeException(
+                        "Favorite product with id " + productId + " for userId " + userId + " not found"
+                ));
         favoriteRepository.delete(favorite);
     }
 
