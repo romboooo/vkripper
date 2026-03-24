@@ -4,12 +4,16 @@ import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import org.example.dto.request.FavoriteRequest;
 import org.example.dto.response.FavoriteListResponse;
 import org.example.dto.response.FavoriteResponse;
 import org.example.dto.response.ProductResponse;
 import org.example.entity.Favorite;
 import org.example.entity.Product;
+import org.example.entity.User;
 import org.example.repository.FavoriteRepository;
+import org.example.repository.ProductRepository;
+import org.example.repository.UserRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -21,6 +25,8 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class FavoriteService {
     private final FavoriteRepository favoriteRepository;
+    private final ProductRepository productRepository;
+    private final UserRepository userRepository;
 
     public FavoriteListResponse getCatalog(int page, int size){
         Pageable pageable = PageRequest.of(page, size, Sort.by("addedAt"));
@@ -28,7 +34,7 @@ public class FavoriteService {
         return FavoriteListResponse.fromPage(favorites);
     }
 
-    public ProductResponse getById(Long id){
+    public ProductResponse getProductById(Long id){
         Favorite favorite = favoriteRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Favorite not found"));
 
@@ -37,6 +43,29 @@ public class FavoriteService {
             throw new RuntimeException("Product is not available");
         }
         return ProductResponse.fromProduct(product);
+    }
+
+    public ProductResponse addToFavorite(Long userId, Long productId){
+            Product product = productRepository.findById(productId)
+                    .orElseThrow(() -> new RuntimeException("Product not found"));
+            User user = userRepository.findById(userId)
+                    .orElseThrow(()-> new RuntimeException("User not found"));
+
+            if (!product.isAvailable()) {
+                throw new RuntimeException("Product is not available");
+            }
+            boolean exists = favoriteRepository.findByUserAndProduct(user, product).isPresent();
+            if (exists) {
+                throw new RuntimeException("Product already in favorites");
+            }
+
+            Favorite favorite = new Favorite();
+            favorite.setUser(user);
+            favorite.setProduct(product);
+
+            Favorite savedFavorite = favoriteRepository.save(favorite);
+            return ProductResponse.fromProduct(savedFavorite.getProduct());
+
     }
 
 }

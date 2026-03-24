@@ -3,23 +3,26 @@ package org.example.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
+import org.example.dto.request.FavoriteRequest;
 import org.example.dto.response.FavoriteListResponse;
 import org.example.dto.response.ProductResponse;
+import org.example.dto.response.UserResponse;
 import org.example.entity.Product;
+import org.example.entity.User;
 import org.example.service.FavoriteService;
+import org.example.service.UserService;
+import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @Tag(name= "Избранное", description = "Работа с избранным")
 @RequestMapping("/api/favorite")
+@RequiredArgsConstructor
 public class FavoriteController {
     private final FavoriteService favoriteService;
-
-    public FavoriteController(FavoriteService favoriteService) {
-        this.favoriteService = favoriteService;
-    }
-
+    private final UserService userService;
 
     @GetMapping
     @Operation(summary = "получить список избранного", description = "возвращает список избранных товаров")
@@ -39,6 +42,17 @@ public class FavoriteController {
         @Parameter(description = "ID товара")
         @PathVariable Long id
     ){
-        return ResponseEntity.ok(favoriteService.getById(id));
+        return ResponseEntity.ok(favoriteService.getProductById(id));
     }
+
+    @PostMapping()
+    @Operation(summary = "добавить товар в избранное", description = "добавляет товар в избранное")
+    public ResponseEntity<ProductResponse> addToFavorite(
+            @Parameter(description = "товар")
+            @RequestBody FavoriteRequest request){
+        ProductResponse response = favoriteService.addToFavorite(request.getUserId(), request.getProductId());
+        return ResponseEntity.ok(response);
+
+    }
+
 }
