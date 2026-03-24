@@ -73,12 +73,13 @@ public class ShoppingCartService {
     }
 
     public void deleteFromShoppingCart(Long userId, Long productId) {
-        ShoppingCart cartItem = shoppingCartRepository
-                .findByUserIdAndProductId(userId, productId)
-                .orElseThrow(() -> new RuntimeException(
-                        "Cart item with productId " + productId + " for userId " + userId + " not found"
-                ));
-        shoppingCartRepository.delete(cartItem);
+        List<ShoppingCart> cartItems = shoppingCartRepository.findByUserIdAndProductId(userId, productId);
+        if (cartItems.isEmpty()) {
+            throw new RuntimeException(
+                    "Cart item with productId " + productId + " for userId " + userId + " not found"
+            );
+        }
+        shoppingCartRepository.deleteAll(cartItems);
     }
 
     public void removeAllFromShoppingCart(Long userId) {
@@ -91,17 +92,18 @@ public class ShoppingCartService {
 
 
     public void addToFavoriteFromCart(Long userId, Long productId) {
-        ShoppingCart cartItem = shoppingCartRepository
-                .findByUserIdAndProductId(userId, productId)
-                .orElseThrow(() -> new RuntimeException(
-                        "Product with id " + productId + " not found in shopping cart of user " + userId
-                ));
+        List<ShoppingCart> cartItems = shoppingCartRepository.findByUserIdAndProductId(userId, productId);
 
-        boolean exists = favoriteRepository.existsByUserIdAndProductId(userId, productId);
-        if (exists) {
+        if (cartItems.isEmpty()) {
+            throw new RuntimeException(
+                    "Product with id " + productId + " not found in shopping cart of user " + userId
+            );
+        }
+        List<Favorite> existingFavorites = favoriteRepository.findByUserIdAndProductId(userId, productId);
+        if (!existingFavorites.isEmpty()) {
             throw new RuntimeException("Product with id " + productId + " is already in favorites");
         }
-
+        ShoppingCart cartItem = cartItems.get(0);
         Favorite favorite = new Favorite();
         favorite.setUser(cartItem.getUser());
         favorite.setProduct(cartItem.getProduct());
@@ -114,12 +116,14 @@ public class ShoppingCartService {
             throw new RuntimeException("Amount must be at least 1");
         }
 
-        ShoppingCart cartItem = shoppingCartRepository
-                .findByUserIdAndProductId(userId, productId)
-                .orElseThrow(() -> new RuntimeException(
-                        "Cart item with productId " + productId + " for userId " + userId + " not found"
-                ));
+        List<ShoppingCart> cartItems = shoppingCartRepository.findByUserIdAndProductId(userId, productId);
+        if (cartItems.isEmpty()) {
+            throw new RuntimeException(
+                    "Cart item with productId " + productId + " for userId " + userId + " not found"
+            );
+        }
 
+        ShoppingCart cartItem = cartItems.get(0);
         cartItem.setAmount(newAmount);
         shoppingCartRepository.save(cartItem);
 

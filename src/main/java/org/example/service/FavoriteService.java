@@ -16,6 +16,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -42,37 +44,37 @@ public class FavoriteService {
     }
 
     public ProductResponse addToFavorite(Long userId, Long productId){
-            Product product = productRepository.findById(productId)
-                    .orElseThrow(() -> new RuntimeException("Product with id " + productId + " not found"));
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Product with id " + productId + " not found"));
 
-            User user = userRepository.findById(userId)
-                    .orElseThrow(()-> new RuntimeException("User with id " +userId + " not found"));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User with id " + userId + " not found"));
 
+        if (!product.isAvailable()) {
+            throw new RuntimeException("Product with id " + productId + " is not available");
+        }
+        List<Favorite> existingFavorites = favoriteRepository.findByUserAndProduct(user, product);
+        if (!existingFavorites.isEmpty()) {
+            throw new RuntimeException("Product with id " + productId + " is already in favorites");
+        }
 
-            if (!product.isAvailable()) {
-                throw new RuntimeException("Product with id" + productId+ " is not available");
-            }
-            boolean exists = favoriteRepository.findByUserAndProduct(user, product).isPresent();
-            if (exists) {
-                throw new RuntimeException("Product with id " + productId + "  already in favorites");
-            }
+        Favorite favorite = new Favorite();
+        favorite.setUser(user);
+        favorite.setProduct(product);
 
-            Favorite favorite = new Favorite();
-            favorite.setUser(user);
-            favorite.setProduct(product);
-
-            Favorite savedFavorite = favoriteRepository.save(favorite);
-            return ProductResponse.fromProduct(savedFavorite.getProduct());
-
+        Favorite savedFavorite = favoriteRepository.save(favorite);
+        return ProductResponse.fromProduct(savedFavorite.getProduct());
     }
 
+
     public void deleteFromFavorite(Long userId, Long productId){
-        Favorite favorite = favoriteRepository
-                .findByUserIdAndProductId(userId, productId)
-                .orElseThrow(() -> new RuntimeException(
-                        "Favorite product with id " + productId + " for userId " + userId + " not found"
-                ));
-        favoriteRepository.delete(favorite);
+        List<Favorite> favorites = favoriteRepository.findByUserIdAndProductId(userId, productId);
+        if (favorites.isEmpty()) {
+            throw new RuntimeException(
+                    "Favorite product with id " + productId + " for userId " + userId + " not found"
+            );
+        }
+        favoriteRepository.deleteAll(favorites);
     }
 
 }

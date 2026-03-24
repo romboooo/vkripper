@@ -15,5 +15,5 @@ public interface ShoppingCartRepository extends JpaRepository<ShoppingCart, Long
 
     boolean existsByUserIdAndProductId(Long userId, Long productId);
 
-    Optional<ShoppingCart> findByUserIdAndProductId(Long userId, Long productId);
+    List<ShoppingCart> findByUserIdAndProductId(Long userId, Long productId);
 }
