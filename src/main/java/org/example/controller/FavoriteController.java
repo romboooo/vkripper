@@ -4,12 +4,11 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.example.dto.response.FavoriteListResponse;
+import org.example.dto.response.ProductResponse;
+import org.example.entity.Product;
 import org.example.service.FavoriteService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @Tag(name= "Избранное", description = "Работа с избранным")
@@ -33,4 +32,13 @@ public class FavoriteController {
         return ResponseEntity.ok(favoriteService.getCatalog(page, size));
     }
 
+
+    @GetMapping("/{id}")
+    @Operation(summary = "получить товар из избранного", description = "возвращает товар из избранного")
+    public ResponseEntity<ProductResponse> getProduct(
+        @Parameter(description = "ID товара")
+        @PathVariable Long id
+    ){
+        return ResponseEntity.ok(favoriteService.getById(id));
+    }
 }

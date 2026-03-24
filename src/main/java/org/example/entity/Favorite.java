@@ -36,5 +36,4 @@ public class Favorite {
     protected void onCreate() {
         addedAt = LocalDateTime.now();
     }
-
 }
