@@ -1,6 +1,7 @@
 package org.example.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,7 @@ public class ReviewController {
     @PostMapping
     @Operation(summary = "Добавить отзыв")
     public ResponseEntity<ReviewResponse> createReview(
+            @Parameter(description = "Товар")
             @Valid
             @RequestBody
             ReviewRequest reviewRequest
@@ -31,7 +33,9 @@ public class ReviewController {
     @PutMapping("/{id}")
     @Operation(summary = "Редактировать отзыв")
     public ResponseEntity<ReviewResponse> updateReview(
+            @Parameter(description = "ID отзыва")
             @PathVariable Long id,
+            @Parameter(description = "Товар")
             @Valid
             @RequestBody
             ReviewRequest reviewRequest
@@ -42,6 +46,7 @@ public class ReviewController {
     @DeleteMapping("/{id}")
     @Operation(summary = "Удалить отзыв")
     public ResponseEntity<String> deleteReview(
+            @Parameter(description = "ID отзыва")
             @PathVariable Long id
     ){
         reviewService.deleteReview(id);
@@ -51,7 +56,9 @@ public class ReviewController {
     @GetMapping
     @Operation(summary = "Получить все отзывы")
     public ResponseEntity<ReviewListResponse> getAllReviews(
+            @Parameter(description = "Номер страницы (начинается с 0)")
             @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Количество товаров на странице")
             @RequestParam(defaultValue = "20") int size
     ){
         return ResponseEntity.ok(reviewService.getAllReviews(page,size));
@@ -59,8 +66,11 @@ public class ReviewController {
     @GetMapping("/product/{productId}")
     @Operation(summary = "Получить отзывы товара по id")
     public ResponseEntity<ReviewListResponse> getReviewsByProduct(
+            @Parameter(description = "ID отзыва")
             @PathVariable Long productId,
+            @Parameter(description = "Номер страницы (начинается с 0)")
             @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Количество товаров на странице")
             @RequestParam(defaultValue = "20") int size) {
         return ResponseEntity.ok(reviewService.getReviewsByProduct(productId, page, size));
     }
