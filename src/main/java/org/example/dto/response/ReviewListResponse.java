@@ -3,9 +3,7 @@ package org.example.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.example.entity.Review;
-import org.example.repository.ReviewRepository;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
