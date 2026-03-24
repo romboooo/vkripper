@@ -38,4 +38,7 @@ public class Product {
     @OneToMany(mappedBy = "product")
     private List<Favorite> favorites;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "seller_id", nullable = false)
+    private User seller;
 }
