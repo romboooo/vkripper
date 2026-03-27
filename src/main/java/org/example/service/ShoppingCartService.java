@@ -35,15 +35,17 @@ public class ShoppingCartService {
         return ShoppingCartListResponse.fromPage(cartPage);
     }
 
-    public ProductResponse getProductById(Long id){
-        ShoppingCart shoppingCart = shoppingCartRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product with id" + id + "not found"));
-        Product product = shoppingCart.getProduct();
+    public ProductResponse getProductById(Long productId, Long userId) {
+        ShoppingCart cartItem =
+                shoppingCartRepository.findFirstByUserIdAndProductId(userId, productId);
 
-        if (!product.isAvailable()){
-            throw new RuntimeException("Product is not available");
+        if (cartItem == null) {
+            throw new RuntimeException(
+                    "Cart item with productId " + productId + " for userId " + userId + " not found"
+            );
         }
-        return ProductResponse.fromProduct(product);
+
+        return ProductResponse.fromProduct(cartItem.getProduct());
     }
 
     public ShoppingCartResponse addToShoppingCart(Long userId, Long productId) {

@@ -66,7 +66,7 @@ public class ReviewController {
     @GetMapping("/product/{productId}")
     @Operation(summary = "Получить отзывы товара по id")
     public ResponseEntity<ReviewListResponse> getReviewsByProduct(
-            @Parameter(description = "ID отзыва")
+            @Parameter(description = "ID товара")
             @PathVariable Long productId,
             @Parameter(description = "Номер страницы (начинается с 0)")
             @RequestParam(defaultValue = "0") int page,
