@@ -37,8 +37,11 @@ public class ShoppingCartController {
     @Operation(summary = "получить карточку товара по id", description = "возвращает товар по id")
     public ResponseEntity<ProductResponse> getProductById(
             @Parameter(description = "ID товара")
-             @PathVariable Long id){
-        return ResponseEntity.ok(shoppingCartService.getProductById(id));
+              Long productId,
+            @Parameter(description = "ID пользователя")
+             Long userId
+    ){
+        return ResponseEntity.ok(shoppingCartService.getProductById(productId, userId));
     }
 
     @PostMapping

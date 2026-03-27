@@ -1,5 +1,6 @@
 package org.example.repository;
 
+import org.example.entity.Product;
 import org.example.entity.ShoppingCart;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,4 +15,6 @@ public interface ShoppingCartRepository extends JpaRepository<ShoppingCart, Long
     boolean existsByUserIdAndProductId(Long userId, Long productId);
 
     List<ShoppingCart> findByUserIdAndProductId(Long userId, Long productId);
+
+    ShoppingCart findFirstByUserIdAndProductId(Long userId, Long productId);
 }
