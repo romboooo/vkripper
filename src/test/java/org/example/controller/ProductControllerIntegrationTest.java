@@ -23,7 +23,6 @@ class ProductControllerIntegrationTest extends IntegrationTestBase {
     @Autowired
     private TestRestTemplate restTemplate;
 
-    @Sql(scripts = "classpath:/test-data.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
     @Test
     void shouldReturnProductById() {
         Product product = new Product();
