@@ -48,12 +48,13 @@ class ProductControllerIntegrationTest extends IntegrationTestBase {
 
     @Test
     void shouldReturnNotFoundForNonExistentProduct() {
-        ResponseEntity<ProductResponse> response = restTemplate.getForEntity(
+        ResponseEntity<String> response = restTemplate.getForEntity(
                 "/api/products/999999",
-                ProductResponse.class
+                String.class
         );
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(response.getBody()).contains("не найден");
     }
 
     private User createUser() {
