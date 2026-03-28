@@ -8,8 +8,6 @@ import org.example.entity.Favorite;
 import org.example.entity.Product;
 import org.example.entity.User;
 import org.example.repository.FavoriteRepository;
-import org.example.repository.ProductRepository;
-import org.example.repository.UserRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -22,7 +20,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class FavoriteServiceImpl implements FavoriteService {
     private final FavoriteRepository favoriteRepository;
-    private final ProductService productService;
+    private final ProductServiceImpl productService;
     private final UserService userService;
 
 
