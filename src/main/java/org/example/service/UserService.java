@@ -17,5 +17,10 @@ public class UserService {
         User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("user is not found"));
         return UserResponse.fromUser(user);
     }
+
+    protected User getUserEntityById(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Пользователь с id " + id + " не найден"));
+    }
 }
 

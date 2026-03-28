@@ -22,8 +22,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class FavoriteServiceImpl implements FavoriteService {
     private final FavoriteRepository favoriteRepository;
-    private final ProductRepository productRepository;
-    private final UserRepository userRepository;
+    private final ProductService productService;
+    private final UserService userService;
+
 
     @Override
     public FavoriteListResponse getCatalog(int page, int size){
@@ -44,11 +45,10 @@ public class FavoriteServiceImpl implements FavoriteService {
     }
     @Override
     public ProductResponse addToFavorite(Long userId, Long productId){
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new RuntimeException("Product with id " + productId + " not found"));
+        Product product = productService.getProductEntityById(productId);
 
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User with id " + userId + " not found"));
+        User user = userService.getUserEntityById(userId);
+
 
         if (!product.isAvailable()) {
             throw new RuntimeException("Product with id " + productId + " is not available");

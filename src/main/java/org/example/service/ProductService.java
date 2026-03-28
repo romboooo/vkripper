@@ -50,4 +50,9 @@ public class ProductService {
                 .orElseThrow(() -> new RuntimeException("Товар не найден"));
         return ProductResponse.fromProduct(product);
     }
+
+    protected Product getProductEntityById(Long id) {
+        return productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Товар с id " + id + " не найден"));
+    }
 }
