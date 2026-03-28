@@ -21,7 +21,7 @@ import java.util.List;
 public class FavoriteServiceImpl implements FavoriteService {
     private final FavoriteRepository favoriteRepository;
     private final ProductServiceImpl productService;
-    private final UserService userService;
+    private final UserServiceImpl userService;
 
 
     @Override
@@ -75,4 +75,20 @@ public class FavoriteServiceImpl implements FavoriteService {
         favoriteRepository.deleteAll(favorites);
     }
 
+    @Override
+    public void addFavoriteEntity(User user, Product product) {
+        List<Favorite> existingFavorites = favoriteRepository.findByUserAndProduct(user, product);
+        if (!existingFavorites.isEmpty()) {
+            throw new RuntimeException("Товар уже есть в избранном");
+        }
+
+        Favorite favorite = new Favorite();
+        favorite.setUser(user);
+        favorite.setProduct(product);
+        favoriteRepository.save(favorite);
+    }
+
+    public void save(Favorite favorite){
+        favoriteRepository.save(favorite);
+    }
 }

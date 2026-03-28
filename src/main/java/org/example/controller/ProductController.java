@@ -3,6 +3,7 @@ package org.example.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
 import org.example.dto.response.ProductListResponse;
 import org.example.dto.response.ProductResponse;
 import org.example.entity.ProductGroup;
@@ -16,13 +17,11 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @Tag(name = "Товары", description = "Работа с каталогом товаров")
 @RequestMapping("/api/products")
+@RequiredArgsConstructor
 public class ProductController {
 
     private final ProductService productService;
 
-    public ProductController(ProductServiceImpl productService){
-        this.productService = productService;
-    }
     @GetMapping
     @Operation(summary = "Получить каталог товаров", description = "Возвращает список доступных товаров")
     public ResponseEntity<ProductListResponse> getCatalog(

@@ -8,9 +8,7 @@ import org.example.dto.response.ReviewResponse;
 import org.example.entity.Product;
 import org.example.entity.Review;
 import org.example.entity.User;
-import org.example.repository.ProductRepository;
 import org.example.repository.ReviewRepository;
-import org.example.repository.UserRepository;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -22,12 +20,11 @@ import org.springframework.stereotype.Service;
 @Transactional
 public class ReviewServiceImpl implements ReviewService{
     private final ReviewRepository reviewRepository;
-    private final UserService userService;
+    private final UserServiceImpl userService;
     private final ProductService productService;
 
     @Override
     public ReviewResponse createReview(ReviewRequest request) {
-        long userId = request.getUserId();
 
         User user = userService.getUserEntityById(request.getUserId());
         Product product = productService.getProductEntityById(request.getProductId());
