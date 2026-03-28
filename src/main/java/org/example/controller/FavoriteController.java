@@ -7,9 +7,9 @@ import lombok.RequiredArgsConstructor;
 import org.example.dto.request.FavoriteRequest;
 import org.example.dto.response.FavoriteListResponse;
 import org.example.dto.response.ProductResponse;
-import org.example.service.FavoriteService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.example.service.FavoriteService;
 
 @RestController
 @Tag(name= "Избранное", description = "Работа с избранным")
