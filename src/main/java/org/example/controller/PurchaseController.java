@@ -7,7 +7,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.dto.request.PurchaseRequest;
 import org.example.dto.response.PurchaseResponse;
-import org.example.service.PurchaseService;
+import org.example.service.PurchaseServiceImpl;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Покупки", description = "Управление покупками товаров")
 public class PurchaseController {
 
-    private final PurchaseService purchaseService;
+    private final PurchaseServiceImpl purchaseService;
 
     @PostMapping
     @Operation(summary = "Оформить покупку", description = "Создаёт новую покупку выбранного типа")

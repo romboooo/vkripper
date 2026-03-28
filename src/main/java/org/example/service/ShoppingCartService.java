@@ -130,4 +130,13 @@ public class ShoppingCartService {
 
         return ShoppingCartResponse.fromShoppingCart(cartItem);
     }
+
+    protected ShoppingCart getCartEntityById(Long id) {
+        return shoppingCartRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Элемент корзины с id " + id + " не найден"));
+    }
+
+    protected void deleteCartEntity(ShoppingCart cartItem){
+        shoppingCartRepository.delete(cartItem);
+    }
 }

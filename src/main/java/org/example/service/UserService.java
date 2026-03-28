@@ -22,5 +22,8 @@ public class UserService {
         return userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Пользователь с id " + id + " не найден"));
     }
+    protected void saveUser(User user) {
+        userRepository.save(user);
+    }
 }
 
