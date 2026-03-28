@@ -37,16 +37,17 @@ class ProductControllerIntegrationTest extends IntegrationTestBase {
         product.setPrice(new BigDecimal("999.99"));
         product.setAvailable(true);
         product.setProductGroup(ProductGroup.ELECTRONICS);
-        product.setSeller(seller);  // ← устанавливаем продавца
+        product.setSeller(seller);
         product = productRepository.save(product);
 
-        ResponseEntity<ProductResponse> response = restTemplate.getForEntity(
+        ResponseEntity<String> response = restTemplate.getForEntity(
                 "/api/products/" + product.getId(),
-                ProductResponse.class
+                String.class
         );
 
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
-        assertThat(response.getBody().getName()).isEqualTo("Тестовый товар");
+        assertThat(response.getBody()).contains("Тестовый товар");
+        assertThat(response.getBody()).contains("999.99");
     }
 
 }

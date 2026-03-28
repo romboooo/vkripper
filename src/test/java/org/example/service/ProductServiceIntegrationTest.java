@@ -35,7 +35,6 @@ class ProductServiceIntegrationTest extends IntegrationTestBase {
 
     @Test
     void shouldReturnProductById() {
-        // Arrange
         Product product = TestDataFactory.createProduct(
                 "Тестовый товар",
                 BigDecimal.valueOf(999.99),
@@ -44,10 +43,8 @@ class ProductServiceIntegrationTest extends IntegrationTestBase {
         );
         product = productRepository.save(product);
 
-        // Act
         ProductResponse result = productService.getProductById(product.getId());
 
-        // Assert
         assertThat(result.getName()).isEqualTo("Тестовый товар");
         assertThat(result.getPrice()).isEqualTo(BigDecimal.valueOf(999.99));
         assertThat(result.isAvailable()).isTrue();
