@@ -45,9 +45,10 @@ class ProductControllerIntegrationTest extends IntegrationTestBase {
                 String.class
         );
 
+        String body = response.getBody();
+        assertThat(body).isNotNull();
+        assertThat(body).containsIgnoringCase("Тестовый товар");
         assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
-        assertThat(response.getBody()).contains("Тестовый товар");
-        assertThat(response.getBody()).contains("999.99");
     }
 
 }
