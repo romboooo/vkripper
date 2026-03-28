@@ -1,6 +1,7 @@
 package org.example;
 
 import jakarta.transaction.Transactional;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -15,7 +16,10 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @Testcontainers
 @Transactional
 public abstract class IntegrationTestBase {
-
+    @BeforeAll
+    static void logContainerInfo() {
+        System.out.println("Starting PostgreSQL container: " + postgres.getContainerIpAddress() + ":" + postgres.getFirstMappedPort());
+    }
     @Container
     static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15-alpine")
             .withDatabaseName("testdb")
