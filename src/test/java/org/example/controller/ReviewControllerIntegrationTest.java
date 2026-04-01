@@ -2,7 +2,7 @@ package org.example.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.IntegrationTestBase;
-import org.example.dto.request.ShoppingCartRequest;
+import org.example.dto.request.ReviewRequest;
 import org.example.entity.Product;
 import org.example.entity.ProductGroup;
 import org.example.entity.User;
@@ -23,7 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @AutoConfigureMockMvc
-class ShoppingCartControllerIntegrationTest extends IntegrationTestBase {
+class ReviewControllerIntegrationTest extends IntegrationTestBase {
 
     @Autowired
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
@@ -47,13 +47,13 @@ class ShoppingCartControllerIntegrationTest extends IntegrationTestBase {
         productRepository.deleteAll();
 
         testUser = new User();
-        testUser.setUsername("test_user_cart");
+        testUser.setUsername("test_user_review");
         testUser.setBalance(new BigDecimal("1000.00"));
         testUser.setFavorites(new java.util.ArrayList<>());
         testUser = userRepository.save(testUser);
 
         testProduct = new Product();
-        testProduct.setName("Test Product for Cart");
+        testProduct.setName("Test Product for Review");
         testProduct.setPrice(new BigDecimal("50.00"));
         testProduct.setAvailable(true);
         testProduct.setProductGroup(ProductGroup.ELECTRONICS);
@@ -62,70 +62,75 @@ class ShoppingCartControllerIntegrationTest extends IntegrationTestBase {
     }
 
     @Test
-    void shouldAddItemToCartSuccessfully() throws Exception {
-        ShoppingCartRequest request = new ShoppingCartRequest();
+    void shouldCreateReviewSuccessfully() throws Exception {
+        ReviewRequest request = new ReviewRequest();
         request.setUserId(testUser.getId());
         request.setProductId(testProduct.getId());
+        request.setText("Great product!");
+        request.setRating(5);
 
-        mockMvc.perform(post("/api/shoppingCart")
+        mockMvc.perform(post("/api/reviews")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.amount", is(1)))
-                .andExpect(jsonPath("$.product.id", is(testProduct.getId().intValue())))
-                .andExpect(jsonPath("$.user.id", is((int) testUser.getId())));
+                .andExpect(jsonPath("$.text", is("Great product!")))
+                .andExpect(jsonPath("$.rating", is(5)));
     }
 
     @Test
-    void shouldReturnBadRequestWhenAddingDuplicateItem() throws Exception {
-        ShoppingCartRequest request = new ShoppingCartRequest();
+    void shouldReturnBadRequestForInvalidRating() throws Exception {
+        ReviewRequest request = new ReviewRequest();
         request.setUserId(testUser.getId());
         request.setProductId(testProduct.getId());
+        request.setText("Bad rating");
+        request.setRating(10);
 
-        mockMvc.perform(post("/api/shoppingCart")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)));
-
-        mockMvc.perform(post("/api/shoppingCart")
+        mockMvc.perform(post("/api/reviews")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").exists());
+                .andExpect(status().isBadRequest());
     }
 
     @Test
-    void shouldGetShoppingCartItems() throws Exception {
-        ShoppingCartRequest request = new ShoppingCartRequest();
+    void shouldGetAllReviews() throws Exception {
+        ReviewRequest request = new ReviewRequest();
         request.setUserId(testUser.getId());
         request.setProductId(testProduct.getId());
+        request.setText("Test review");
+        request.setRating(4);
 
-        mockMvc.perform(post("/api/shoppingCart")
+        mockMvc.perform(post("/api/reviews")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)));
 
-        mockMvc.perform(get("/api/shoppingCart")
-                        .param("userId", String.valueOf(testUser.getId()))
+        mockMvc.perform(get("/api/reviews")
                         .param("page", "0")
                         .param("size", "10"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").isArray())
-                .andExpect(jsonPath("$.content[0].product.id", is(testProduct.getId().intValue())))
                 .andExpect(jsonPath("$.totalElements", is(1)));
     }
 
     @Test
-    void shouldDeleteItemFromCart() throws Exception {
-        ShoppingCartRequest request = new ShoppingCartRequest();
+    void shouldDeleteReviewSuccessfully() throws Exception {
+        ReviewRequest request = new ReviewRequest();
         request.setUserId(testUser.getId());
         request.setProductId(testProduct.getId());
+        request.setText("To be deleted");
+        request.setRating(3);
 
-        mockMvc.perform(post("/api/shoppingCart")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)));
-
-        mockMvc.perform(delete("/api/shoppingCart/{productId}", testProduct.getId())
-                        .param("userId", String.valueOf(testUser.getId())))
+        String response = mockMvc.perform(post("/api/reviews")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", org.hamcrest.Matchers.containsString("Удалили")));
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        Long reviewId = objectMapper.readTree(response).get("id").asLong();
+
+        mockMvc.perform(delete("/api/reviews/{id}", reviewId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", org.hamcrest.Matchers.containsString("deleted")));
     }
 }
