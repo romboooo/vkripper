@@ -53,8 +53,12 @@ class ProductControllerIntegrationTest {
                 .getResponse()
                 .getContentAsString();
 
-
+        // Debug: выводим ответ в консоль CI
+        System.out.println("=== DEBUG RESPONSE ===");
         System.out.println(responseJson);
+        System.out.println("=== END DEBUG ===");
+
+        // Assert
         ProductResponse body = objectMapper.readValue(responseJson, ProductResponse.class);
 
         assertThat(body).isNotNull();
@@ -66,11 +70,16 @@ class ProductControllerIntegrationTest {
 
     @Test
     void shouldReturnNotFoundForNonExistentProduct() throws Exception {
+        // Попробуй 404 вместо 400
         mockMvc.perform(get("/api/products/999999")
                         .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest()) // или isNotFound, зависит от GlobalExceptionHandler
-                .andExpect(result ->
-                        assertThat(result.getResponse().getContentAsString())
-                                .contains("не найден"));
+                .andExpect(status().isNotFound()) // <--- изменил с isBadRequest()
+                .andExpect(result -> {
+                    String content = result.getResponse().getContentAsString();
+                    System.out.println("=== DEBUG ERROR RESPONSE ===");
+                    System.out.println(content);
+                    System.out.println("=== END DEBUG ===");
+                    assertThat(content).contains("не найден");
+                });
     }
 }
