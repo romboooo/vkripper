@@ -143,4 +143,111 @@ class ShoppingCartServiceImplTest {
         assertThat(response.getAmount()).isEqualTo(newAmount);
         verify(shoppingCartRepository, times(1)).save(cartItem);
     }
+    @Test
+    void shouldDeleteItemFromCartSuccessfully() {
+        // Arrange
+        Long userId = 1L;
+        Long productId = 100L;
+
+        User user = new User();
+        user.setId(userId);
+        user.setFavorites(new java.util.ArrayList<>());
+
+        Product product = new Product();
+        product.setId(productId);
+
+        ShoppingCart cartItem = new ShoppingCart();
+        cartItem.setId(10L);
+        cartItem.setUser(user);
+        cartItem.setProduct(product);
+        cartItem.setAmount(1);
+
+        // Мокаем поиск элемента корзины
+        when(shoppingCartRepository.findByUserIdAndProductId(userId, productId))
+                .thenReturn(java.util.List.of(cartItem));
+
+        // Act
+        shoppingCartService.deleteFromShoppingCart(userId, productId);
+
+        // Assert
+        verify(shoppingCartRepository, times(1)).deleteAll(java.util.List.of(cartItem));
+    }
+
+    @Test
+    void shouldThrowExceptionWhenDeletingNonExistentItem() {
+        // Arrange
+        Long userId = 1L;
+        Long productId = 100L;
+
+        // Мокаем пустой список (товар не найден)
+        when(shoppingCartRepository.findByUserIdAndProductId(userId, productId))
+                .thenReturn(java.util.List.of());
+
+        // Act & Assert
+        assertThatThrownBy(() -> shoppingCartService.deleteFromShoppingCart(userId, productId))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("не найден в корзине");
+
+        verify(shoppingCartRepository, never()).deleteAll(any());
+    }
+    @Test
+    void shouldRemoveAllItemsFromCartSuccessfully() {
+        // Arrange
+        Long userId = 1L;
+
+        User user = new User();
+        user.setId(userId);
+        user.setFavorites(new java.util.ArrayList<>());
+
+        Product product = new Product();
+        product.setId(100L);
+
+        ShoppingCart cartItem1 = new ShoppingCart();
+        cartItem1.setId(10L);
+        cartItem1.setUser(user);
+        cartItem1.setProduct(product);
+
+        ShoppingCart cartItem2 = new ShoppingCart();
+        cartItem2.setId(11L);
+        cartItem2.setUser(user);
+        cartItem2.setProduct(product);
+
+        when(shoppingCartRepository.findAllByUserId(userId))
+                .thenReturn(java.util.List.of(cartItem1, cartItem2));
+
+        // Act
+        shoppingCartService.removeAllFromShoppingCart(userId);
+
+        // Assert
+        verify(shoppingCartRepository, times(1)).deleteAll(java.util.List.of(cartItem1, cartItem2));
+    }
+
+    @Test
+    void shouldAddToFavoriteFromCartSuccessfully() {
+        // Arrange
+        Long userId = 1L;
+        Long productId = 100L;
+
+        User user = new User();
+        user.setId(userId);
+        user.setFavorites(new java.util.ArrayList<>());
+
+        Product product = new Product();
+        product.setId(productId);
+
+        ShoppingCart cartItem = new ShoppingCart();
+        cartItem.setId(10L);
+        cartItem.setUser(user);
+        cartItem.setProduct(product);
+
+        when(shoppingCartRepository.findByUserIdAndProductId(userId, productId))
+                .thenReturn(java.util.List.of(cartItem));
+
+        // Act
+        shoppingCartService.addToFavoriteFromCart(userId, productId);
+
+        // Assert
+        verify(favoriteService, times(1)).addFavoriteEntity(user, product);
+    }
+
 }
