@@ -62,11 +62,10 @@ class ProductControllerIntegrationTest extends IntegrationTestBase {
 
     @Test
     void shouldReturnNotFoundForNonExistentProduct() throws Exception {
-
         mockMvc.perform(get("/api/products/999999")
                         .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest()) // Твой хендлер кидает 400
+                .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").exists())
-                .andExpect(jsonPath("$.error").value(org.mockito.ArgumentMatchers.contains("не найден")));
+                .andExpect(jsonPath("$.error", org.hamcrest.Matchers.containsString("не найден")));
     }
 }
