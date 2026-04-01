@@ -1,6 +1,7 @@
 package org.example.controller;
 
 import org.example.IntegrationTestBase;
+import org.example.dto.response.ProductResponse;
 import org.example.entity.Product;
 import org.example.entity.ProductGroup;
 import org.example.entity.User;
@@ -45,18 +46,21 @@ class ProductControllerIntegrationTest extends IntegrationTestBase {
         product = productRepository.saveAndFlush(product);
 
         // Запрос с ответом в String, чтобы избежать JsonParseException
-        ResponseEntity<String> response = restTemplate.getForEntity(
+        ResponseEntity<ProductResponse> response = restTemplate.getForEntity(
                 "/api/products/" + product.getId(),
-                String.class
+                ProductResponse.class
         );
 
+        // 2. Проверяем статус
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        String body = response.getBody();
-        assertThat(body).isNotNull().isNotEmpty();
-        assertThat(body).contains(String.valueOf(product.getId()));
-        assertThat(body).contains("Тестовый товар");
-        assertThat(body).contains("999.99");
-        assertThat(body).contains("ELECTRONICS");
+
+        // 3. Проверяем тело через геттеры (никаких проблем с кодировкой)
+        ProductResponse body = response.getBody();
+        assertThat(body).isNotNull();
+        assertThat(body.getId()).isEqualTo(product.getId());
+        assertThat(body.getName()).isEqualTo("Тестовый товар");
+        assertThat(body.getPrice()).isEqualByComparingTo(new BigDecimal("999.99"));
+        assertThat(body.getProductGroup()).isEqualTo(ProductGroup.ELECTRONICS);
     }
 
     @Test
