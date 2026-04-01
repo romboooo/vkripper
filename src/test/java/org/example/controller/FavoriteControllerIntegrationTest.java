@@ -2,7 +2,7 @@ package org.example.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.IntegrationTestBase;
-import org.example.dto.request.ShoppingCartRequest;
+import org.example.dto.request.FavoriteRequest;
 import org.example.entity.Product;
 import org.example.entity.ProductGroup;
 import org.example.entity.User;
@@ -23,9 +23,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @AutoConfigureMockMvc
-class ShoppingCartControllerIntegrationTest extends IntegrationTestBase {
+class FavoriteControllerIntegrationTest extends IntegrationTestBase {
 
     @Autowired
+    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     private MockMvc mockMvc;
 
     @Autowired
@@ -46,13 +47,13 @@ class ShoppingCartControllerIntegrationTest extends IntegrationTestBase {
         productRepository.deleteAll();
 
         testUser = new User();
-        testUser.setUsername("test_user_cart");
+        testUser.setUsername("test_user_favorite");
         testUser.setBalance(new BigDecimal("1000.00"));
         testUser.setFavorites(new java.util.ArrayList<>());
         testUser = userRepository.save(testUser);
 
         testProduct = new Product();
-        testProduct.setName("Test Product for Cart");
+        testProduct.setName("Test Product for Favorite");
         testProduct.setPrice(new BigDecimal("50.00"));
         testProduct.setAvailable(true);
         testProduct.setProductGroup(ProductGroup.ELECTRONICS);
@@ -61,31 +62,30 @@ class ShoppingCartControllerIntegrationTest extends IntegrationTestBase {
     }
 
     @Test
-    void shouldAddItemToCartSuccessfully() throws Exception {
-        ShoppingCartRequest request = new ShoppingCartRequest();
+    void shouldAddToFavoriteSuccessfully() throws Exception {
+        FavoriteRequest request = new FavoriteRequest();
         request.setUserId(testUser.getId());
         request.setProductId(testProduct.getId());
 
-        mockMvc.perform(post("/api/shoppingCart")
+        mockMvc.perform(post("/api/favorite")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.amount", is(1)))
-                .andExpect(jsonPath("$.product.id", is(testProduct.getId().intValue())))
-                .andExpect(jsonPath("$.user.id", is((int) testUser.getId())));
+                .andExpect(jsonPath("$.id", is(testProduct.getId().intValue())))
+                .andExpect(jsonPath("$.name", is("Test Product for Favorite")));
     }
 
     @Test
-    void shouldReturnBadRequestWhenAddingDuplicateItem() throws Exception {
-        ShoppingCartRequest request = new ShoppingCartRequest();
+    void shouldReturnBadRequestForDuplicateFavorite() throws Exception {
+        FavoriteRequest request = new FavoriteRequest();
         request.setUserId(testUser.getId());
         request.setProductId(testProduct.getId());
 
-        mockMvc.perform(post("/api/shoppingCart")
+        mockMvc.perform(post("/api/favorite")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)));
 
-        mockMvc.perform(post("/api/shoppingCart")
+        mockMvc.perform(post("/api/favorite")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
@@ -93,36 +93,34 @@ class ShoppingCartControllerIntegrationTest extends IntegrationTestBase {
     }
 
     @Test
-    void shouldGetShoppingCartItems() throws Exception {
-        ShoppingCartRequest request = new ShoppingCartRequest();
+    void shouldGetFavoritesSuccessfully() throws Exception {
+        FavoriteRequest request = new FavoriteRequest();
         request.setUserId(testUser.getId());
         request.setProductId(testProduct.getId());
 
-        mockMvc.perform(post("/api/shoppingCart")
+        mockMvc.perform(post("/api/favorite")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)));
 
-        mockMvc.perform(get("/api/shoppingCart")
-                        .param("userId", String.valueOf(testUser.getId()))
+        mockMvc.perform(get("/api/favorite")
                         .param("page", "0")
                         .param("size", "10"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").isArray())
-                .andExpect(jsonPath("$.content[0].product.id", is(testProduct.getId().intValue())))
                 .andExpect(jsonPath("$.totalElements", is(1)));
     }
 
     @Test
-    void shouldDeleteItemFromCart() throws Exception {
-        ShoppingCartRequest request = new ShoppingCartRequest();
+    void shouldDeleteFromFavoriteSuccessfully() throws Exception {
+        FavoriteRequest request = new FavoriteRequest();
         request.setUserId(testUser.getId());
         request.setProductId(testProduct.getId());
 
-        mockMvc.perform(post("/api/shoppingCart")
+        mockMvc.perform(post("/api/favorite")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)));
 
-        mockMvc.perform(delete("/api/shoppingCart/{productId}", testProduct.getId())
+        mockMvc.perform(delete("/api/favorite/{productId}", testProduct.getId())
                         .param("userId", String.valueOf(testUser.getId())))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", org.hamcrest.Matchers.containsString("Удалили")));
