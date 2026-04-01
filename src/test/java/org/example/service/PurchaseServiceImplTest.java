@@ -30,7 +30,6 @@ class PurchaseServiceImplTest {
 
     @Test
     void shouldCompletePurchaseWithBalance() {
-        // Arrange
         Long userId = 1L;
         Long cartId = 10L;
         BigDecimal price = new BigDecimal("100.00");
@@ -60,10 +59,8 @@ class PurchaseServiceImplTest {
         doNothing().when(userService).saveUser(any(User.class));
         doNothing().when(shoppingCartService).deleteCartEntity(any(ShoppingCart.class));
 
-        // Act
         PurchaseResponse response = purchaseService.createPurchase(request);
 
-        // Assert
         assertThat(response.getStatus()).isEqualTo("COMPLETED");
         assertThat(response.getMessage()).isEqualTo("Покупка успешно оформлена");
         assertThat(user.getBalance()).isEqualByComparingTo(new BigDecimal("300.00"));
@@ -74,7 +71,6 @@ class PurchaseServiceImplTest {
 
     @Test
     void shouldThrowExceptionWhenInsufficientFunds() {
-        // Arrange
         Long userId = 1L;
         Long cartId = 10L;
         BigDecimal price = new BigDecimal("100.00");
@@ -102,7 +98,6 @@ class PurchaseServiceImplTest {
         when(shoppingCartService.getCartEntityById(cartId)).thenReturn(cartItem);
         when(userService.getUserEntityById(userId)).thenReturn(user);
 
-        // Act & Assert
         assertThatThrownBy(() -> purchaseService.createPurchase(request))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("Недостаточно средств");
@@ -113,13 +108,12 @@ class PurchaseServiceImplTest {
 
     @Test
     void shouldReturnPendingForSellerPurchase() {
-        // Arrange
         Long userId = 1L;
         Long sellerId = 99L;
         Long cartId = 10L;
 
         User seller = new User();
-        seller.setId(sellerId); // <--- ВАЖНО: явно ставим ID
+        seller.setId(sellerId);
         seller.setUsername("SellerName");
 
         User buyer = new User();
@@ -128,7 +122,7 @@ class PurchaseServiceImplTest {
         Product product = new Product();
         product.setId(100L);
         product.setPrice(new BigDecimal("50.00"));
-        product.setSeller(seller); // <--- Связываем продавца
+        product.setSeller(seller);
 
         ShoppingCart cartItem = new ShoppingCart();
         cartItem.setId(cartId);
@@ -144,10 +138,8 @@ class PurchaseServiceImplTest {
         when(shoppingCartService.getCartEntityById(cartId)).thenReturn(cartItem);
         when(userService.getUserEntityById(userId)).thenReturn(buyer);
 
-        // Act
         PurchaseResponse response = purchaseService.createPurchase(request);
 
-        // Assert
         assertThat(response.getStatus()).isEqualTo("PENDING");
         assertThat(response.getMessage()).contains(String.valueOf(sellerId));
         verify(userService, never()).saveUser(any());
@@ -155,7 +147,6 @@ class PurchaseServiceImplTest {
 
     @Test
     void shouldReturnRedirectForOzonPurchase() {
-        // Arrange
         Long userId = 1L;
         Long cartId = 10L;
 
@@ -180,10 +171,8 @@ class PurchaseServiceImplTest {
         when(shoppingCartService.getCartEntityById(cartId)).thenReturn(cartItem);
         when(userService.getUserEntityById(userId)).thenReturn(buyer);
 
-        // Act
         PurchaseResponse response = purchaseService.createPurchase(request);
 
-        // Assert
         assertThat(response.getStatus()).isEqualTo("REDIRECT");
         assertThat(response.getRedirectUrl()).isEqualTo("https://ozon.ru/t/yCwkBpx");
     }

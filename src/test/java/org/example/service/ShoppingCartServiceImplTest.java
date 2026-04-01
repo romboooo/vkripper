@@ -100,12 +100,11 @@ class ShoppingCartServiceImplTest {
 
         Product product = new Product();
         product.setId(productId);
-        product.setAvailable(false); // <--- Товар недоступен
+        product.setAvailable(false);
 
         when(userService.getUserEntityById(userId)).thenReturn(user);
         when(productService.getProductEntityById(productId)).thenReturn(product);
 
-        // Act & Assert
         assertThatThrownBy(() -> shoppingCartService.addToShoppingCart(userId, productId))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("недоступен");
@@ -145,7 +144,6 @@ class ShoppingCartServiceImplTest {
     }
     @Test
     void shouldDeleteItemFromCartSuccessfully() {
-        // Arrange
         Long userId = 1L;
         Long productId = 100L;
 
@@ -162,28 +160,22 @@ class ShoppingCartServiceImplTest {
         cartItem.setProduct(product);
         cartItem.setAmount(1);
 
-        // Мокаем поиск элемента корзины
         when(shoppingCartRepository.findByUserIdAndProductId(userId, productId))
                 .thenReturn(java.util.List.of(cartItem));
 
-        // Act
         shoppingCartService.deleteFromShoppingCart(userId, productId);
 
-        // Assert
         verify(shoppingCartRepository, times(1)).deleteAll(java.util.List.of(cartItem));
     }
 
     @Test
     void shouldThrowExceptionWhenDeletingNonExistentItem() {
-        // Arrange
         Long userId = 1L;
         Long productId = 100L;
 
-        // Мокаем пустой список (товар не найден)
         when(shoppingCartRepository.findByUserIdAndProductId(userId, productId))
                 .thenReturn(java.util.List.of());
 
-        // Act & Assert
         assertThatThrownBy(() -> shoppingCartService.deleteFromShoppingCart(userId, productId))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("не найден в корзине");
@@ -192,7 +184,6 @@ class ShoppingCartServiceImplTest {
     }
     @Test
     void shouldRemoveAllItemsFromCartSuccessfully() {
-        // Arrange
         Long userId = 1L;
 
         User user = new User();
@@ -215,16 +206,13 @@ class ShoppingCartServiceImplTest {
         when(shoppingCartRepository.findAllByUserId(userId))
                 .thenReturn(java.util.List.of(cartItem1, cartItem2));
 
-        // Act
         shoppingCartService.removeAllFromShoppingCart(userId);
 
-        // Assert
         verify(shoppingCartRepository, times(1)).deleteAll(java.util.List.of(cartItem1, cartItem2));
     }
 
     @Test
     void shouldAddToFavoriteFromCartSuccessfully() {
-        // Arrange
         Long userId = 1L;
         Long productId = 100L;
 
@@ -243,10 +231,8 @@ class ShoppingCartServiceImplTest {
         when(shoppingCartRepository.findByUserIdAndProductId(userId, productId))
                 .thenReturn(java.util.List.of(cartItem));
 
-        // Act
         shoppingCartService.addToFavoriteFromCart(userId, productId);
 
-        // Assert
         verify(favoriteService, times(1)).addFavoriteEntity(user, product);
     }
 

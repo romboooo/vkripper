@@ -41,7 +41,6 @@ class FavoriteServiceImplTest {
 
     @Test
     void shouldGetCatalogSuccessfully() {
-        // Arrange
         User user = new User();
         user.setId(1L);
         user.setFavorites(new java.util.ArrayList<>());
@@ -61,17 +60,14 @@ class FavoriteServiceImplTest {
         Page<Favorite> favoritePage = new PageImpl<>(List.of(favorite));
         when(favoriteRepository.findAll(any(PageRequest.class))).thenReturn(favoritePage);
 
-        // Act
         FavoriteListResponse response = favoriteService.getCatalog(0, 10);
 
-        // Assert
         assertThat(response.getContent()).hasSize(1);
         assertThat(response.getTotalElements()).isEqualTo(1);
     }
 
     @Test
     void shouldGetProductByIdFromFavoriteSuccessfully() {
-        // Arrange
         User user = new User();
         user.setId(1L);
         user.setFavorites(new java.util.ArrayList<>());
@@ -90,20 +86,16 @@ class FavoriteServiceImplTest {
 
         when(favoriteRepository.findById(10L)).thenReturn(java.util.Optional.of(favorite));
 
-        // Act
         ProductResponse response = favoriteService.getProductById(10L);
 
-        // Assert
         assertThat(response.getId()).isEqualTo(100L);
         assertThat(response.getName()).isEqualTo("Test Product");
     }
 
     @Test
     void shouldThrowExceptionWhenFavoriteNotFound() {
-        // Arrange
         when(favoriteRepository.findById(999L)).thenReturn(java.util.Optional.empty());
 
-        // Act & Assert
         assertThatThrownBy(() -> favoriteService.getProductById(999L))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("Favorite not found");
@@ -111,7 +103,6 @@ class FavoriteServiceImplTest {
 
     @Test
     void shouldThrowExceptionWhenProductNotAvailable() {
-        // Arrange
         User user = new User();
         user.setId(1L);
         user.setFavorites(new java.util.ArrayList<>());
@@ -127,7 +118,6 @@ class FavoriteServiceImplTest {
 
         when(favoriteRepository.findById(10L)).thenReturn(java.util.Optional.of(favorite));
 
-        // Act & Assert
         assertThatThrownBy(() -> favoriteService.getProductById(10L))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("not available");
@@ -135,7 +125,6 @@ class FavoriteServiceImplTest {
 
     @Test
     void shouldAddToFavoriteSuccessfully() {
-        // Arrange
         Long userId = 1L;
         Long productId = 100L;
 
@@ -160,17 +149,14 @@ class FavoriteServiceImplTest {
         when(favoriteRepository.findByUserAndProduct(user, product)).thenReturn(List.of());
         when(favoriteRepository.save(any(Favorite.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        // Act
         ProductResponse response = favoriteService.addToFavorite(userId, productId);
 
-        // Assert
         assertThat(response.getId()).isEqualTo(productId);
         verify(favoriteRepository, times(1)).save(any(Favorite.class));
     }
 
     @Test
     void shouldThrowExceptionWhenProductAlreadyInFavorites() {
-        // Arrange
         Long userId = 1L;
         Long productId = 100L;
 
@@ -191,7 +177,6 @@ class FavoriteServiceImplTest {
         when(productService.getProductEntityById(productId)).thenReturn(product);
         when(favoriteRepository.findByUserAndProduct(user, product)).thenReturn(List.of(existingFavorite));
 
-        // Act & Assert
         assertThatThrownBy(() -> favoriteService.addToFavorite(userId, productId))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("already in favorites");
@@ -201,7 +186,6 @@ class FavoriteServiceImplTest {
 
     @Test
     void shouldThrowExceptionWhenProductNotAvailableForFavorite() {
-        // Arrange
         Long userId = 1L;
         Long productId = 100L;
 
@@ -216,7 +200,6 @@ class FavoriteServiceImplTest {
         when(userService.getUserEntityById(userId)).thenReturn(user);
         when(productService.getProductEntityById(productId)).thenReturn(product);
 
-        // Act & Assert
         assertThatThrownBy(() -> favoriteService.addToFavorite(userId, productId))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("not available");
@@ -224,7 +207,6 @@ class FavoriteServiceImplTest {
 
     @Test
     void shouldDeleteFromFavoriteSuccessfully() {
-        // Arrange
         Long userId = 1L;
         Long productId = 100L;
 
@@ -233,22 +215,18 @@ class FavoriteServiceImplTest {
 
         when(favoriteRepository.findByUserIdAndProductId(userId, productId)).thenReturn(List.of(favorite));
 
-        // Act
         favoriteService.deleteFromFavorite(userId, productId);
 
-        // Assert
         verify(favoriteRepository, times(1)).deleteAll(List.of(favorite));
     }
 
     @Test
     void shouldThrowExceptionWhenDeletingNonExistentFavorite() {
-        // Arrange
         Long userId = 1L;
         Long productId = 100L;
 
         when(favoriteRepository.findByUserIdAndProductId(userId, productId)).thenReturn(List.of());
 
-        // Act & Assert
         assertThatThrownBy(() -> favoriteService.deleteFromFavorite(userId, productId))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("not found");
@@ -258,7 +236,6 @@ class FavoriteServiceImplTest {
 
     @Test
     void shouldAddFavoriteEntitySuccessfully() {
-        // Arrange
         User user = new User();
         user.setId(1L);
         user.setFavorites(new java.util.ArrayList<>());
@@ -270,16 +247,13 @@ class FavoriteServiceImplTest {
         when(favoriteRepository.findByUserAndProduct(user, product)).thenReturn(List.of());
         when(favoriteRepository.save(any(Favorite.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        // Act
         favoriteService.addFavoriteEntity(user, product);
 
-        // Assert
         verify(favoriteRepository, times(1)).save(any(Favorite.class));
     }
 
     @Test
     void shouldThrowExceptionWhenAddingDuplicateFavoriteEntity() {
-        // Arrange
         User user = new User();
         user.setId(1L);
         user.setFavorites(new java.util.ArrayList<>());
@@ -294,7 +268,6 @@ class FavoriteServiceImplTest {
 
         when(favoriteRepository.findByUserAndProduct(user, product)).thenReturn(List.of(existingFavorite));
 
-        // Act & Assert
         assertThatThrownBy(() -> favoriteService.addFavoriteEntity(user, product))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("уже есть в избранном");

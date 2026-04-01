@@ -34,13 +34,11 @@ class ProductControllerIntegrationTest extends IntegrationTestBase {
 
     @Test
     void shouldReturnProductById() throws Exception {
-        // Создаём продавца
         User seller = new User();
         seller.setUsername("seller_" + System.currentTimeMillis());
         seller.setBalance(BigDecimal.TEN);
         seller = userRepository.saveAndFlush(seller);
 
-        // Создаём товар
         Product product = new Product();
         product.setName("Тестовый товар");
         product.setPrice(new BigDecimal("999.99"));
@@ -49,7 +47,6 @@ class ProductControllerIntegrationTest extends IntegrationTestBase {
         product.setSeller(seller);
         product = productRepository.saveAndFlush(product);
 
-        // Проверка через jsonPath (надежнее десериализации)
         mockMvc.perform(get("/api/products/" + product.getId())
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
