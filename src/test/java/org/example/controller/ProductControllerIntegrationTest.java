@@ -53,6 +53,8 @@ class ProductControllerIntegrationTest {
                 .getResponse()
                 .getContentAsString();
 
+
+        System.out.println(responseJson);
         ProductResponse body = objectMapper.readValue(responseJson, ProductResponse.class);
 
         assertThat(body).isNotNull();
