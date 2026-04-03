@@ -6,7 +6,9 @@ import org.example.entity.User;
 public interface UserService {
     UserResponse getById(Long id);
 
-    User getUserEntityById(Long id);
+    User getUserEntityByUsername(String username);
 
     void saveUser(User user);
+
+
 }

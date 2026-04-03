@@ -10,6 +10,8 @@ import org.example.dto.response.ReviewListResponse;
 import org.example.dto.response.ReviewResponse;
 import org.example.service.ReviewService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -38,18 +40,20 @@ public class ReviewController {
             @Parameter(description = "Товар")
             @Valid
             @RequestBody
-            ReviewRequest reviewRequest
+            ReviewRequest reviewRequest,
+            @AuthenticationPrincipal UserDetails userDetails
 
     ){
-        return ResponseEntity.ok(reviewService.updateReview(id,reviewRequest));
+        return ResponseEntity.ok(reviewService.updateReview(id,reviewRequest, userDetails.getUsername()));
     }
     @DeleteMapping("/{id}")
     @Operation(summary = "Удалить отзыв")
     public ResponseEntity<String> deleteReview(
             @Parameter(description = "ID отзыва")
-            @PathVariable Long id
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserDetails userDetails
     ){
-        reviewService.deleteReview(id);
+        reviewService.deleteReview(id, userDetails.getUsername());
         return ResponseEntity.ok("Review has been deleted");
     }
 

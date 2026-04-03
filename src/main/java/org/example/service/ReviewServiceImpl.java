@@ -1,5 +1,6 @@
 package org.example.service;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.example.dto.request.ReviewRequest;
@@ -20,13 +21,14 @@ import org.springframework.stereotype.Service;
 @Transactional
 public class ReviewServiceImpl implements ReviewService{
     private final ReviewRepository reviewRepository;
-    private final UserServiceImpl userService;
+    private final UserService userService;
     private final ProductService productService;
 
     @Override
+    @PreAuthorize("hasRole('BUYER') or hasRole('SELLER') or hasRole('MODERATOR')")
     public ReviewResponse createReview(ReviewRequest request) {
 
-        User user = userService.getUserEntityById(request.getUserId());
+        User user = userService.getUserEntityByUsername(request.getUsername());
         Product product = productService.getProductEntityById(request.getProductId());
 
         Review review = new Review();
@@ -38,7 +40,11 @@ public class ReviewServiceImpl implements ReviewService{
         return ReviewResponse.fromReview(saved);
     }
     @Override
-    public ReviewResponse updateReview(long reviewID, ReviewRequest request){
+    @PreAuthorize(
+            "hasRole('MODERATOR') or hasRole('ADMIN') or " +
+                    "(#reviewOwner == authentication.principal.username)"
+    )
+    public ReviewResponse updateReview(long reviewID, ReviewRequest request, String reviewOwner){
         Review review = reviewRepository.findById(reviewID)
                 .orElseThrow(() -> new RuntimeException("Отзыв с id " + reviewID + " не найден"));
         review.setText(request.getText());
@@ -46,7 +52,11 @@ public class ReviewServiceImpl implements ReviewService{
         return ReviewResponse.fromReview(reviewRepository.save(review));
     }
     @Override
-    public void deleteReview(long reviewID){
+    @PreAuthorize(
+            "hasRole('MODERATOR') or hasRole('ADMIN') or " +
+                    "(#reviewOwner == authentication.principal.username)"
+    )
+    public void deleteReview(long reviewID, String reviewOwner){
         reviewRepository.delete(reviewRepository.findById(reviewID)
                 .orElseThrow(() -> new RuntimeException("Отзыв с id " + reviewID + " не найден")));
     }

@@ -8,7 +8,6 @@ import org.example.dto.response.ProductListResponse;
 import org.example.dto.response.ProductResponse;
 import org.example.entity.ProductGroup;
 import org.example.service.ProductService;
-import org.example.service.ProductServiceImpl;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;

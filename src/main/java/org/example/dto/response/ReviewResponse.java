@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class ReviewResponse {
     private Long id;
-    private Long userId;
+    private String username;
     private Long productId;
     private String text;
     private Integer rating;
@@ -18,7 +18,7 @@ public class ReviewResponse {
     public static ReviewResponse fromReview(Review review){
         return new ReviewResponse(
                 review.getId(),
-                review.getUser().getId(),
+                review.getUser().getUsername(),
                 review.getProduct().getId(),
                 review.getText(),
                 review.getRating(),

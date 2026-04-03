@@ -7,19 +7,19 @@ import org.example.entity.ShoppingCart;
 
 public interface ShoppingCartService {
 
-    ShoppingCartListResponse getByUserId(Long userId, int page, int size);
+    ShoppingCartListResponse getByUsername(String username, int page, int size);
 
-    ProductResponse getProductById(Long productId, Long userId);
+    ProductResponse getProductById(Long productId, String username);
 
-    ShoppingCartResponse addToShoppingCart(Long userId, Long productId);
+    ShoppingCartResponse addToShoppingCart(String username, Long productId);
 
-    void deleteFromShoppingCart(Long userId, Long productId);
+    void deleteFromShoppingCart(String username, Long productId);
 
-    void removeAllFromShoppingCart(Long userId);
+    void removeAllFromShoppingCart(String username);
 
-    void addToFavoriteFromCart(Long userId, Long productId);
+    void addToFavoriteFromCart(String username, Long productId);
 
-    ShoppingCartResponse updateProductAmount(Long userId, Long productId, int newAmount);
+    ShoppingCartResponse updateProductAmount(String username, Long productId, int newAmount);
 
     ShoppingCart getCartEntityById(Long id);
 

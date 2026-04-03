@@ -6,9 +6,9 @@ import org.example.dto.response.ReviewResponse;
 public interface ReviewService {
     ReviewResponse createReview(ReviewRequest request);
 
-    ReviewResponse updateReview(long reviewID, ReviewRequest request);
+    ReviewResponse updateReview(long reviewID, ReviewRequest request, String reviewOwner);
 
-    void deleteReview(long reviewID);
+    void deleteReview(long reviewID, String reviewOwner);
 
     ReviewListResponse getAllReviews(int page, int size);
 

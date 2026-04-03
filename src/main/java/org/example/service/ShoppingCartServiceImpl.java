@@ -13,6 +13,7 @@ import org.example.repository.ShoppingCartRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
@@ -23,19 +24,21 @@ public class ShoppingCartServiceImpl implements ShoppingCartService{
 
     private final ShoppingCartRepository shoppingCartRepository;
     private final ProductService productService;
-    private final UserServiceImpl userService;
+    private final UserService userService;
     private final FavoriteService favoriteService;
 
     @Override
-    public ShoppingCartListResponse getByUserId(Long userId, int page, int size) {
+    @PreAuthorize("hasRole('BUYER')")
+    public ShoppingCartListResponse getByUsername(String username, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<ShoppingCart> cartPage = shoppingCartRepository.findByUserId(userId, pageable);
+        Page<ShoppingCart> cartPage = shoppingCartRepository.findByUserUsername(username, pageable);
         return ShoppingCartListResponse.fromPage(cartPage);
     }
 
     @Override
-    public ProductResponse getProductById(Long productId, Long userId) {
-        ShoppingCart cartItem = shoppingCartRepository.findFirstByUserIdAndProductId(userId, productId);
+    @PreAuthorize("hasRole('BUYER')")
+    public ProductResponse getProductById(Long productId, String username) {
+        ShoppingCart cartItem = shoppingCartRepository.findFirstByUserUsernameAndProductId(username, productId);
         if (cartItem == null) {
             throw new RuntimeException("Товар не найден в корзине");
         }
@@ -43,15 +46,16 @@ public class ShoppingCartServiceImpl implements ShoppingCartService{
     }
 
     @Override
-    public ShoppingCartResponse addToShoppingCart(Long userId, Long productId) {
-        User user = userService.getUserEntityById(userId);
+    @PreAuthorize("hasRole('BUYER')")
+    public ShoppingCartResponse addToShoppingCart(String username, Long productId) {
+        User user = userService.getUserEntityByUsername(username);
         Product product = productService.getProductEntityById(productId);
 
         if (!product.isAvailable()) {
             throw new RuntimeException("Товар недоступен");
         }
 
-        boolean exists = shoppingCartRepository.existsByUserIdAndProductId(userId, productId);
+        boolean exists = shoppingCartRepository.existsByUserUsernameAndProductId(username, productId);
         if (exists) {
             throw new RuntimeException("Товар уже в корзине");
         }
@@ -65,8 +69,9 @@ public class ShoppingCartServiceImpl implements ShoppingCartService{
     }
 
     @Override
-    public void deleteFromShoppingCart(Long userId, Long productId) {
-        List<ShoppingCart> cartItems = shoppingCartRepository.findByUserIdAndProductId(userId, productId);
+    @PreAuthorize("hasRole('BUYER')")
+    public void deleteFromShoppingCart(String username, Long productId) {
+        List<ShoppingCart> cartItems = shoppingCartRepository.findByUserUsernameAndProductId(username, productId);
         if (cartItems.isEmpty()) {
             throw new RuntimeException("Товар не найден в корзине");
         }
@@ -74,8 +79,9 @@ public class ShoppingCartServiceImpl implements ShoppingCartService{
     }
 
     @Override
-    public void removeAllFromShoppingCart(Long userId) {
-        List<ShoppingCart> items = shoppingCartRepository.findAllByUserId(userId);
+    @PreAuthorize("hasRole('BUYER')")
+    public void removeAllFromShoppingCart(String username) {
+        List<ShoppingCart> items = shoppingCartRepository.findAllByUserUsername(username);
         if (items.isEmpty()) {
             throw new RuntimeException("Корзина пуста");
         }
@@ -83,27 +89,25 @@ public class ShoppingCartServiceImpl implements ShoppingCartService{
     }
 
     @Override
-    public void addToFavoriteFromCart(Long userId, Long productId) {
-        // Находим элемент корзины
-        List<ShoppingCart> cartItems = shoppingCartRepository.findByUserIdAndProductId(userId, productId);
+    @PreAuthorize("hasRole('BUYER')")
+    public void addToFavoriteFromCart(String username, Long productId) {
+        List<ShoppingCart> cartItems = shoppingCartRepository.findByUserUsernameAndProductId(username, productId);
         if (cartItems.isEmpty()) {
             throw new RuntimeException("Товар не найден в корзине");
         }
 
         ShoppingCart cartItem = cartItems.get(0);
-
-        // Полностью делегируем логику добавления в избранное сервису FavoriteService
-        // Внутри addFavoriteEntity уже есть проверка на дубликат и сохранение
         favoriteService.addFavoriteEntity(cartItem.getUser(), cartItem.getProduct());
     }
 
     @Override
-    public ShoppingCartResponse updateProductAmount(Long userId, Long productId, int newAmount) {
+    @PreAuthorize("hasRole('BUYER')")
+    public ShoppingCartResponse updateProductAmount(String username, Long productId, int newAmount) {
         if (newAmount < 1) {
             throw new RuntimeException("Количество должно быть больше 0");
         }
 
-        List<ShoppingCart> cartItems = shoppingCartRepository.findByUserIdAndProductId(userId, productId);
+        List<ShoppingCart> cartItems = shoppingCartRepository.findByUserUsernameAndProductId(username, productId);
         if (cartItems.isEmpty()) {
             throw new RuntimeException("Товар не найден в корзине");
         }

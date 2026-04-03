@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.dto.request.PurchaseRequest;
 import org.example.dto.response.PurchaseResponse;
 import org.example.entity.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -15,12 +16,13 @@ import java.math.BigDecimal;
 @Transactional
 public class PurchaseServiceImpl implements PurchaseService{
 
-    private final ShoppingCartServiceImpl shoppingCartService;
-    private final UserServiceImpl userService;
+    private final ShoppingCartService shoppingCartService;
+    private final UserService userService;
 
     @Override
+    @PreAuthorize("hasRole('BUYER')")
     public PurchaseResponse createPurchase(PurchaseRequest request) {
-        User user = userService.getUserEntityById(request.getUserId());
+        User user = userService.getUserEntityByUsername(request.getUsername());
 
         ShoppingCart cartItem = shoppingCartService.getCartEntityById(request.getCartItemId());
 

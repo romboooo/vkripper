@@ -114,12 +114,12 @@ class ShoppingCartServiceImplTest {
 
     @Test
     void shouldUpdateProductAmountSuccessfully() {
-        Long userId = 1L;
+        String username = "username";
         Long productId = 100L;
         int newAmount = 5;
 
         User user = new User();
-        user.setId(userId);
+        user.setId(username);
         user.setFavorites(new java.util.ArrayList<>());
 
         Product product = new Product();
@@ -132,23 +132,23 @@ class ShoppingCartServiceImplTest {
         cartItem.setProduct(product);
         cartItem.setAmount(1);
 
-        when(shoppingCartRepository.findByUserIdAndProductId(userId, productId))
+        when(shoppingCartRepository.findByUsernameAndProductId(username, productId))
                 .thenReturn(java.util.List.of(cartItem));
         when(shoppingCartRepository.save(any(ShoppingCart.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
-        ShoppingCartResponse response = shoppingCartService.updateProductAmount(userId, productId, newAmount);
+        ShoppingCartResponse response = shoppingCartService.updateProductAmount(username, productId, newAmount);
 
         assertThat(response.getAmount()).isEqualTo(newAmount);
         verify(shoppingCartRepository, times(1)).save(cartItem);
     }
     @Test
     void shouldDeleteItemFromCartSuccessfully() {
-        Long userId = 1L;
+        String username = "username";
         Long productId = 100L;
 
         User user = new User();
-        user.setId(userId);
+        user.setUsername(username);
         user.setFavorites(new java.util.ArrayList<>());
 
         Product product = new Product();
@@ -160,20 +160,20 @@ class ShoppingCartServiceImplTest {
         cartItem.setProduct(product);
         cartItem.setAmount(1);
 
-        when(shoppingCartRepository.findByUserIdAndProductId(userId, productId))
+        when(shoppingCartRepository.findByUsernameAndProductId(username, productId))
                 .thenReturn(java.util.List.of(cartItem));
 
-        shoppingCartService.deleteFromShoppingCart(userId, productId);
+        shoppingCartService.deleteFromShoppingCart(username, productId);
 
         verify(shoppingCartRepository, times(1)).deleteAll(java.util.List.of(cartItem));
     }
 
     @Test
     void shouldThrowExceptionWhenDeletingNonExistentItem() {
-        Long userId = 1L;
+        Long userId = 10L;
         Long productId = 100L;
 
-        when(shoppingCartRepository.findByUserIdAndProductId(userId, productId))
+        when(shoppingCartRepository.findByUsernameAndProductId(userId, productId))
                 .thenReturn(java.util.List.of());
 
         assertThatThrownBy(() -> shoppingCartService.deleteFromShoppingCart(userId, productId))

@@ -67,7 +67,7 @@ class FavoriteServiceImplTest {
     }
 
     @Test
-    void shouldGetProductByIdFromFavoriteSuccessfully() {
+    void shouldGetProductByUsernameFromFavoriteSuccessfully() {
         User user = new User();
         user.setId(1L);
         user.setFavorites(new java.util.ArrayList<>());

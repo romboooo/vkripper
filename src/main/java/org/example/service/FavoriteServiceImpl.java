@@ -8,10 +8,13 @@ import org.example.entity.Favorite;
 import org.example.entity.Product;
 import org.example.entity.User;
 import org.example.repository.FavoriteRepository;
+import org.example.repository.ProductRepository;
+import org.example.repository.UserRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
@@ -20,17 +23,25 @@ import java.util.List;
 @RequiredArgsConstructor
 public class FavoriteServiceImpl implements FavoriteService {
     private final FavoriteRepository favoriteRepository;
-    private final ProductServiceImpl productService;
-    private final UserServiceImpl userService;
-
+    private final ProductService productService;
+    private final UserService userService;
+    private final UserRepository userRepository;
+    private final ProductRepository productRepository;
 
     @Override
+    @PreAuthorize("hasRole('BUYER')")
     public FavoriteListResponse getCatalog(int page, int size){
         Pageable pageable = PageRequest.of(page, size, Sort.by("addedAt"));
         Page<Favorite> favorites = favoriteRepository.findAll(pageable);
         return FavoriteListResponse.fromPage(favorites);
     }
+
     @Override
+    @PreAuthorize("hasRole('BUYER')")
+    public ProductResponse getProductByUsername(String username) {
+        return null;
+    }
+
     public ProductResponse getProductById(Long id){
         Favorite favorite = favoriteRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Favorite not found"));
@@ -42,11 +53,11 @@ public class FavoriteServiceImpl implements FavoriteService {
         return ProductResponse.fromProduct(product);
     }
     @Override
-    public ProductResponse addToFavorite(Long userId, Long productId){
+    @PreAuthorize("hasRole('BUYER')")
+    public ProductResponse addToFavorite(String username, Long productId){
         Product product = productService.getProductEntityById(productId);
 
-        User user = userService.getUserEntityById(userId);
-
+        User user = userService.getUserEntityByUsername(username);
 
         if (!product.isAvailable()) {
             throw new RuntimeException("Product with id " + productId + " is not available");
@@ -65,11 +76,14 @@ public class FavoriteServiceImpl implements FavoriteService {
     }
 
     @Override
-    public void deleteFromFavorite(Long userId, Long productId){
-        List<Favorite> favorites = favoriteRepository.findByUserIdAndProductId(userId, productId);
+    @PreAuthorize("hasRole('BUYER')")
+    public void deleteFromFavorite(String username, Long productId){
+        User user = userRepository.findByUsername(username);
+        Product product = productRepository.getById(productId);
+        List<Favorite> favorites = favoriteRepository.findByUserAndProduct(user, product);
         if (favorites.isEmpty()) {
             throw new RuntimeException(
-                    "Favorite product with id " + productId + " for userId " + userId + " not found"
+                    "Favorite product with id " + productId + " for userId " + username + " not found"
             );
         }
         favoriteRepository.deleteAll(favorites);

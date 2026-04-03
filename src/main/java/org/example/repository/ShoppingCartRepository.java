@@ -9,12 +9,12 @@ import java.util.List;
 
 public interface ShoppingCartRepository extends JpaRepository<ShoppingCart, Long> {
 
-    Page<ShoppingCart> findByUserId(Long userId, Pageable pageable);
-    List<ShoppingCart> findAllByUserId(Long userId);
+    Page<ShoppingCart> findByUserUsername(String username, Pageable pageable);
+    List<ShoppingCart> findAllByUserUsername(String username);
 
-    boolean existsByUserIdAndProductId(Long userId, Long productId);
+    boolean existsByUserUsernameAndProductId(String username, Long productId);
 
-    List<ShoppingCart> findByUserIdAndProductId(Long userId, Long productId);
+    List<ShoppingCart> findByUserUsernameAndProductId(String username, Long productId);
 
-    ShoppingCart findFirstByUserIdAndProductId(Long userId, Long productId);
+    ShoppingCart findFirstByUserUsernameAndProductId(String username, Long productId);
 }
