@@ -6,8 +6,6 @@ plugins {
     id("io.spring.dependency-management") version "1.1.4"
 }
 
-group = "org.example"
-version = "1.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
@@ -15,10 +13,21 @@ repositories {
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
     implementation("org.postgresql:postgresql")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-    implementation("org.projectlombok:lombok:1.18.32")
+    implementation("org.springframework.boot:spring-boot-starter-validation")
+
+    compileOnly("org.projectlombok:lombok:1.18.32")
+
+    annotationProcessor("org.projectlombok:lombok:1.18.32")
+    testCompileOnly("org.projectlombok:lombok:1.18.32")
+    testAnnotationProcessor("org.projectlombok:lombok:1.18.32")
+
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0")
+
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("com.h2database:h2:2.2.224")
+
 }
 
 tasks.test {
