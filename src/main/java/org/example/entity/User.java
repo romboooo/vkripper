@@ -22,6 +22,9 @@ public class User {
     @Column(name = "username", unique = true)
     private String username;
 
+    @Column(name="password", nullable = false)
+    private String password;
+
     @Column(name = "balance", nullable=false)
     private BigDecimal balance;
 
@@ -29,4 +32,8 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Favorite> favorites;
 
+    @JsonIgnore
+    @Column(name="role", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private Role role;
 }
