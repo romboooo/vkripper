@@ -30,7 +30,8 @@ public class AuthServiceImpl implements AuthService{
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Пользователь не найден: " + username));
         GrantedAuthority authority = new SimpleGrantedAuthority(user.getRole().name());
-        return new org.springframework.security.core.userdetails.User(
+        return new CustomUserDetails(
+                user.getId(),
                 user.getUsername(),
                 user.getPassword(),
                 Collections.singletonList(authority)
