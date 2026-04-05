@@ -7,9 +7,6 @@ import org.example.entity.PurchaseType;
 @Data
 public class PurchaseRequest {
     @NotNull
-    private Long userId;
-
-    @NotNull
     private Long cartItemId;
 
     @NotNull
