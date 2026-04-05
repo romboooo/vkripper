@@ -7,97 +7,91 @@ import org.example.dto.request.ShoppingCartRequest;
 import org.example.dto.response.ProductResponse;
 import org.example.dto.response.ShoppingCartListResponse;
 import org.example.dto.response.ShoppingCartResponse;
+import org.example.security.CustomUserDetails;
 import org.example.service.ShoppingCartService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
 
 @RestController
 @RequestMapping("/api/shoppingCart")
 @Tag(name ="Корзина", description = "работа с корзиной товаров")
 public class ShoppingCartController {
-    public final ShoppingCartService shoppingCartService;
+    private final ShoppingCartService shoppingCartService;
 
     public ShoppingCartController(ShoppingCartService shoppingCartService){
         this.shoppingCartService = shoppingCartService;
     }
 
     @GetMapping
-    @Operation(summary = "Получить товары в корзине пользователя", description = "Возвращает список товаров из корзины пользователя с пагинацией")
+    @Operation(summary = "Получить список товаров в корзине", description = "Возвращает список товаров из корзины текущего пользователя с пагинацией")
     public ResponseEntity<ShoppingCartListResponse> getShoppingCart(
-            @Parameter(description = "ID пользователя") @RequestParam Long userId,
-            @Parameter(description = "Номер страницы (начинается с 0)") @RequestParam(defaultValue = "0") int page,
-            @Parameter(description = "Количество товаров на странице") @RequestParam(defaultValue = "20") int size
+            @Parameter(description = "Номер страницы (начиная с 0)") @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Количество товаров на странице") @RequestParam(defaultValue = "20") int size,
+            @AuthenticationPrincipal CustomUserDetails currentUser
     ) {
-        return ResponseEntity.ok(shoppingCartService.getByUserId(userId, page, size));
+        return ResponseEntity.ok(shoppingCartService.getByUserId(currentUser.getId(), page, size));
     }
 
-
     @GetMapping("/{id}")
-    @Operation(summary = "получить карточку товара по id", description = "возвращает товар по id")
+    @Operation(summary = "Получить карточку товара по id", description = "Возвращает товар из корзины текущего пользователя")
     public ResponseEntity<ProductResponse> getProductById(
-            @Parameter(description = "ID товара")
-              Long productId,
-            @Parameter(description = "ID пользователя")
-             Long userId
+            @Parameter(description = "ID товара") @PathVariable Long id,
+            @AuthenticationPrincipal CustomUserDetails currentUser
     ){
-        return ResponseEntity.ok(shoppingCartService.getProductById(productId, userId));
+        return ResponseEntity.ok(shoppingCartService.getProductById(id, currentUser.getId()));
     }
 
     @PostMapping
-    @Operation(summary = "добавить товар в корзину", description = "добавляет товар в корзину")
+    @Operation(summary = "Добавить товар в корзину", description = "Добавляет товар в корзину текущего пользователя")
     public ResponseEntity<ShoppingCartResponse> addToShopping(
-            @Parameter(description = "ID пользователя и ID товара")
-            @RequestBody ShoppingCartRequest request
+            @Parameter(description = "Данные для добавления (ID товара)")
+            @RequestBody ShoppingCartRequest request,
+            @AuthenticationPrincipal CustomUserDetails currentUser
     ){
         ShoppingCartResponse response = shoppingCartService.addToShoppingCart(
-                request.getUserId(), request.getProductId()
+                currentUser.getId(), request.getProductId()
         );
         return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{productId}")
-    @Operation(summary = "Удалить товар из корзины пользователя", description = "Удаляет товар из корзины конкретного пользователя")
+    @Operation(summary = "Удалить товар из корзины", description = "Удаляет товар из корзины текущего пользователя")
     public ResponseEntity<String> removeFromShopping(
             @Parameter(description = "ID продукта") @PathVariable Long productId,
-            @Parameter(description = "ID пользователя") @RequestParam Long userId
+            @AuthenticationPrincipal CustomUserDetails currentUser
     ){
-        shoppingCartService.deleteFromShoppingCart(userId, productId);
-        return ResponseEntity.ok("Удалили товар с id  " + productId + " для пользователя с id" + userId);
+        shoppingCartService.deleteFromShoppingCart(currentUser.getId(), productId);
+        return ResponseEntity.ok("Удалили товар с id " + productId + " для пользователя с id " + currentUser.getId());
     }
 
     @DeleteMapping("/all")
-    @Operation(summary = "Очистить корзину пользователя", description = "Удаляет все товары из корзины конкретного пользователя")
+    @Operation(summary = "Очистить корзину", description = "Удаляет все товары из корзины текущего пользователя")
     public ResponseEntity<String> removeAllFromShoppingCart(
-            @Parameter(description = "ID пользователя") @RequestParam Long userId
+            @AuthenticationPrincipal CustomUserDetails currentUser
     ){
-        shoppingCartService.removeAllFromShoppingCart(userId);
-        return ResponseEntity.ok("Все товары удалились из корзины для пользователя с ID" + userId);
+        shoppingCartService.removeAllFromShoppingCart(currentUser.getId());
+        return ResponseEntity.ok("Все товары удалились из корзины для пользователя с ID " + currentUser.getId());
     }
 
     @PostMapping("/favoriteFromCart")
-    @Operation(summary = "Добавить товар из корзины в избранное", description = "Добавляет товар из корзины конкретного пользователя в избранное")
+    @Operation(summary = "Добавить товар из корзины в избранное", description = "Переносит товар из корзины текущего пользователя в избранное")
     public ResponseEntity<String> addToFavoriteFromCart(
-            @Parameter(description = "id пользователя")
-            @RequestParam Long userId,
-            @Parameter(description = "id товара")
-            @RequestParam Long productId
+            @AuthenticationPrincipal CustomUserDetails currentUser,
+            @Parameter(description = "id товара") @RequestParam Long productId
     ){
-        shoppingCartService.addToFavoriteFromCart(userId, productId);
-        return ResponseEntity.ok("Товар с id " + productId + " добавлен в избранное к пользователю с id " + userId);
+        shoppingCartService.addToFavoriteFromCart(currentUser.getId(), productId);
+        return ResponseEntity.ok("Товар с id " + productId + " добавлен в избранное к пользователю с id " + currentUser.getId());
     }
 
     @PutMapping("/updateAmount")
-    @Operation(summary = "Изменить количество товара в корзине", description = "Обновляет количество конкретного товара в корзине пользователя")
+    @Operation(summary = "Изменить количество товара в корзине", description = "Обновляет количество конкретного товара в корзине текущего пользователя")
     public ResponseEntity<ShoppingCartResponse> updateCartItemAmount(
-            @Parameter(description = "id пользователя")
-            @RequestParam Long userId,
-            @Parameter(description = "id товара")
-            @RequestParam Long productId,
-            @Parameter(description = "новое количество товара")
-            @RequestParam int newAmount
+            @AuthenticationPrincipal CustomUserDetails currentUser,
+            @Parameter(description = "id товара") @RequestParam Long productId,
+            @Parameter(description = "новое количество товара") @RequestParam int newAmount
     ){
-        ShoppingCartResponse response = shoppingCartService.updateProductAmount(userId, productId, newAmount);
+        ShoppingCartResponse response = shoppingCartService.updateProductAmount(currentUser.getId(), productId, newAmount);
         return ResponseEntity.ok(response);
     }
 }
