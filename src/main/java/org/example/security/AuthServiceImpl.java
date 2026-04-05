@@ -63,11 +63,11 @@ public class AuthServiceImpl implements AuthService{
     }
 
     @Override
-    public void assignRole(Long userId, String role) {
+    public void assignRole(Long userId, Role role) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
         try {
-            user.setRole(Role.valueOf(role));
+            user.setRole(role);
             userRepository.save(user);
         } catch (IllegalArgumentException e) {
             throw new RuntimeException("Некорректная роль: " + role);
