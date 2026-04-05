@@ -21,9 +21,9 @@ public class SecurityBeansConfig {
     public RoleHierarchy roleHierarchy() {
         RoleHierarchyImpl hierarchy = new RoleHierarchyImpl();
         hierarchy.setHierarchy("""
-                ROLE_ADMIN > ROLE_MODERATOR
-                ROLE_MODERATOR > ROLE_BUYER
-                ROLE_MODERATOR > ROLE_SELLER
+                ADMIN > MODERATOR
+                MODERATOR > BUYER
+                MODERATOR > SELLER
                 """);
         return hierarchy;
     }

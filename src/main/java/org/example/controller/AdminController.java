@@ -24,7 +24,7 @@ public class AdminController {
     public ResponseEntity<String> assignRole(
             @Parameter(description = "ID пользователя")
             @PathVariable Long id,
-            @Parameter(description = "роль: ROLE_SELLER, ROLE_BUYER, ROLE_MODERATOR, ROLE_ADMIN")
+            @Parameter(description = "роль: SELLER, BUYER, MODERATOR, ADMIN")
             @RequestParam Role role) {
         authService.assignRole(id, role);
         return ResponseEntity.ok("Роль " + role + "успешно назначена");
