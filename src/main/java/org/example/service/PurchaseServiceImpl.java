@@ -21,7 +21,7 @@ public class PurchaseServiceImpl implements PurchaseService {
         User user = userService.getUserEntityById(userId);
         ShoppingCart cartItem = shoppingCartService.getCartEntityById(request.getCartItemId());
 
-        if (!cartItem.getUser().getId().equals(user.getId())) {
+        if (cartItem.getUser().getId() != user.getId()) {
             throw new RuntimeException("Элемент корзины не принадлежит пользователю");
         }
 
