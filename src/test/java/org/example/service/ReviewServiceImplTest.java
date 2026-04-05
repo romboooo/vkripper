@@ -56,7 +56,6 @@ class ReviewServiceImplTest {
         product.setAvailable(true);
 
         ReviewRequest request = new ReviewRequest();
-        request.setUserId(userId);
         request.setProductId(productId);
         request.setText("Great product!");
         request.setRating(5);
@@ -74,7 +73,7 @@ class ReviewServiceImplTest {
 
         when(reviewRepository.save(any(Review.class))).thenReturn(savedReview);
 
-        ReviewResponse response = reviewService.createReview(request);
+        ReviewResponse response = reviewService.createReview(userId, request);
 
         assertThat(response).isNotNull();
         assertThat(response.getId()).isEqualTo(10L);
@@ -102,7 +101,6 @@ class ReviewServiceImplTest {
         existingReview.setRating(3);
 
         ReviewRequest request = new ReviewRequest();
-        request.setUserId(1L);
         request.setProductId(100L);
         request.setText("New text");
         request.setRating(5);

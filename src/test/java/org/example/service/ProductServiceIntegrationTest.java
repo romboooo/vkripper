@@ -5,6 +5,7 @@ import org.example.dto.response.ProductListResponse;
 import org.example.dto.response.ProductResponse;
 import org.example.entity.Product;
 import org.example.entity.ProductGroup;
+import org.example.entity.Role;
 import org.example.entity.User;
 import org.example.repository.ProductRepository;
 import org.example.repository.UserRepository;
@@ -37,6 +38,8 @@ class ProductServiceIntegrationTest extends IntegrationTestBase {
     @BeforeEach
     void setUp() {
         testSeller = TestDataFactory.createUser("seller_" + System.currentTimeMillis(), BigDecimal.valueOf(10000));
+        testSeller.setPassword("encoded_password");
+        testSeller.setRole(Role.BUYER);
         testSeller = userRepository.saveAndFlush(testSeller);
     }
 
@@ -46,9 +49,7 @@ class ProductServiceIntegrationTest extends IntegrationTestBase {
         createProduct("Товар 1", ProductGroup.ELECTRONICS, true);
         createProduct("Товар 2", ProductGroup.HOME_AND_DACHA, true);
         createProduct("Недоступный", ProductGroup.ELECTRONICS, false);
-
         ProductListResponse response = productService.getCatalog(0, 10);
-
         assertThat(response.getContent()).hasSize(2);
         assertThat(response.getContent()).allMatch(ProductResponse::isAvailable);
         assertThat(response.getTotalElements()).isEqualTo(2);
@@ -60,9 +61,7 @@ class ProductServiceIntegrationTest extends IntegrationTestBase {
         createProduct("Смартфон Samsung", ProductGroup.ELECTRONICS, true);
         createProduct("Ноутбук Samsung", ProductGroup.ELECTRONICS, true);
         createProduct("Кроссовки", ProductGroup.SPORT_AND_LEISURE, true);
-
         List<ProductResponse> results = productService.searchProducts("samsung");
-
         assertThat(results).hasSize(2);
         assertThat(results).allMatch(p -> p.getName().toLowerCase().contains("samsung"));
     }
@@ -73,9 +72,7 @@ class ProductServiceIntegrationTest extends IntegrationTestBase {
         createProduct("Телефон", ProductGroup.ELECTRONICS, true);
         createProduct("Футболка", ProductGroup.WARDROBE, true);
         createProduct("Наушники", ProductGroup.ELECTRONICS, true);
-
         ProductListResponse response = productService.getProductsByGroup(ProductGroup.ELECTRONICS, 0, 10);
-
         assertThat(response.getContent()).hasSize(2);
         assertThat(response.getContent()).allMatch(p -> p.getProductGroup() == ProductGroup.ELECTRONICS);
     }
@@ -84,9 +81,7 @@ class ProductServiceIntegrationTest extends IntegrationTestBase {
     @DisplayName("Получение товара по ID")
     void shouldReturnProductById() {
         Product product = createProduct("Уникальный товар", ProductGroup.BEAUTY, true);
-
         ProductResponse result = productService.getProductById(product.getId());
-
         assertThat(result.getId()).isEqualTo(product.getId());
         assertThat(result.getName()).isEqualTo("Уникальный товар");
     }
@@ -105,10 +100,8 @@ class ProductServiceIntegrationTest extends IntegrationTestBase {
         for (int i = 0; i < 25; i++) {
             createProduct("Товар " + i, ProductGroup.ELECTRONICS, true);
         }
-
         ProductListResponse page1 = productService.getCatalog(0, 10);
         ProductListResponse page2 = productService.getCatalog(1, 10);
-
         assertThat(page1.getContent()).hasSize(10);
         assertThat(page2.getContent()).hasSize(10);
         assertThat(page1.getTotalPages()).isEqualTo(3);

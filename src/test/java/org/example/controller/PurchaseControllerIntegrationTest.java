@@ -7,14 +7,20 @@ import org.example.entity.*;
 import org.example.repository.ProductRepository;
 import org.example.repository.ShoppingCartRepository;
 import org.example.repository.UserRepository;
+import org.example.security.CustomUserDetails;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 
 import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -25,7 +31,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class PurchaseControllerIntegrationTest extends IntegrationTestBase {
 
     @Autowired
-    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     private MockMvc mockMvc;
 
     @Autowired
@@ -49,11 +54,13 @@ class PurchaseControllerIntegrationTest extends IntegrationTestBase {
         userRepository.deleteAll();
         productRepository.deleteAll();
         shoppingCartRepository.deleteAll();
+        SecurityContextHolder.clearContext();
 
         testUser = new User();
         testUser.setUsername("test_user_purchase");
+        testUser.setPassword("encoded");
         testUser.setBalance(new BigDecimal("1000.00"));
-        testUser.setFavorites(new java.util.ArrayList<>());
+        testUser.setRole(Role.BUYER);
         testUser = userRepository.save(testUser);
 
         testProduct = new Product();
@@ -69,15 +76,28 @@ class PurchaseControllerIntegrationTest extends IntegrationTestBase {
         testCartItem.setProduct(testProduct);
         testCartItem.setAmount(2);
         testCartItem = shoppingCartRepository.save(testCartItem);
+
+        CustomUserDetails userDetails = new CustomUserDetails(
+                testUser.getId(),
+                testUser.getUsername(),
+                testUser.getPassword(),
+                Collections.singletonList(new SimpleGrantedAuthority(testUser.getRole().name()))
+        );
+        UsernamePasswordAuthenticationToken auth =
+                new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(auth);
+    }
+
+    @AfterEach
+    void tearDown() {
+        SecurityContextHolder.clearContext();
     }
 
     @Test
     void shouldCreatePurchaseWithBalanceSuccessfully() throws Exception {
         PurchaseRequest request = new PurchaseRequest();
-        request.setUserId(testUser.getId());
         request.setCartItemId(testCartItem.getId());
         request.setPurchaseType(PurchaseType.BALANCE);
-
         mockMvc.perform(post("/api/purchases")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -89,10 +109,8 @@ class PurchaseControllerIntegrationTest extends IntegrationTestBase {
     @Test
     void shouldCreatePurchaseWithSellerSuccessfully() throws Exception {
         PurchaseRequest request = new PurchaseRequest();
-        request.setUserId(testUser.getId());
         request.setCartItemId(testCartItem.getId());
         request.setPurchaseType(PurchaseType.SELLER);
-
         mockMvc.perform(post("/api/purchases")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -103,10 +121,8 @@ class PurchaseControllerIntegrationTest extends IntegrationTestBase {
     @Test
     void shouldCreatePurchaseWithOzonSuccessfully() throws Exception {
         PurchaseRequest request = new PurchaseRequest();
-        request.setUserId(testUser.getId());
         request.setCartItemId(testCartItem.getId());
         request.setPurchaseType(PurchaseType.OZON);
-
         mockMvc.perform(post("/api/purchases")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -118,7 +134,6 @@ class PurchaseControllerIntegrationTest extends IntegrationTestBase {
     @Test
     void shouldReturnBadRequestForInvalidPurchaseRequest() throws Exception {
         PurchaseRequest request = new PurchaseRequest();
-
         mockMvc.perform(post("/api/purchases")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
