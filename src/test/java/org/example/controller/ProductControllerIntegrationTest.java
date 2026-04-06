@@ -3,23 +3,29 @@ package org.example.controller;
 import org.example.IntegrationTestBase;
 import org.example.entity.Product;
 import org.example.entity.ProductGroup;
+import org.example.entity.Role;
 import org.example.entity.User;
 import org.example.repository.ProductRepository;
 import org.example.repository.UserRepository;
+import org.example.security.CustomUserDetails;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
 @AutoConfigureMockMvc
 class ProductControllerIntegrationTest extends IntegrationTestBase {
 
@@ -32,19 +38,42 @@ class ProductControllerIntegrationTest extends IntegrationTestBase {
     @Autowired
     private UserRepository userRepository;
 
+    private User testSeller;
+
+    @BeforeEach
+    void setUp() {
+        SecurityContextHolder.clearContext();
+        testSeller = new User();
+        testSeller.setUsername("seller_product_test");
+        testSeller.setPassword("encoded");
+        testSeller.setBalance(BigDecimal.TEN);
+        testSeller.setRole(Role.BUYER);
+        testSeller = userRepository.saveAndFlush(testSeller);
+
+        CustomUserDetails userDetails = new CustomUserDetails(
+                testSeller.getId(),
+                testSeller.getUsername(),
+                testSeller.getPassword(),
+                Collections.singletonList(new SimpleGrantedAuthority(testSeller.getRole().name()))
+        );
+        UsernamePasswordAuthenticationToken auth =
+                new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(auth);
+    }
+
+    @AfterEach
+    void tearDown() {
+        SecurityContextHolder.clearContext();
+    }
+
     @Test
     void shouldReturnProductById() throws Exception {
-        User seller = new User();
-        seller.setUsername("seller_" + System.currentTimeMillis());
-        seller.setBalance(BigDecimal.TEN);
-        seller = userRepository.saveAndFlush(seller);
-
         Product product = new Product();
         product.setName("Тестовый товар");
         product.setPrice(new BigDecimal("999.99"));
         product.setAvailable(true);
         product.setProductGroup(ProductGroup.ELECTRONICS);
-        product.setSeller(seller);
+        product.setSeller(testSeller);
         product = productRepository.saveAndFlush(product);
 
         mockMvc.perform(get("/api/products/" + product.getId())

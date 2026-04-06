@@ -1,6 +1,5 @@
 package org.example.service;
 
-import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.example.dto.request.ReviewRequest;
 import org.example.dto.response.ReviewListResponse;
@@ -13,20 +12,19 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class ReviewServiceImpl implements ReviewService{
+public class ReviewServiceImpl implements ReviewService {
     private final ReviewRepository reviewRepository;
     private final UserServiceImpl userService;
     private final ProductService productService;
 
     @Override
-    public ReviewResponse createReview(ReviewRequest request) {
-
-        User user = userService.getUserEntityById(request.getUserId());
+    public ReviewResponse createReview(Long userId, ReviewRequest request) {
+        User user = userService.getUserEntityById(userId);
         Product product = productService.getProductEntityById(request.getProductId());
 
         Review review = new Review();
@@ -34,36 +32,36 @@ public class ReviewServiceImpl implements ReviewService{
         review.setUser(user);
         review.setRating(request.getRating());
         review.setText(request.getText());
+
         Review saved = reviewRepository.save(review);
         return ReviewResponse.fromReview(saved);
     }
+
     @Override
-    public ReviewResponse updateReview(long reviewID, ReviewRequest request){
-        Review review = reviewRepository.findById(reviewID)
-                .orElseThrow(() -> new RuntimeException("Отзыв с id " + reviewID + " не найден"));
+    public ReviewResponse updateReview(long reviewID, ReviewRequest request) {
+        Review review = reviewRepository.findById(reviewID).orElseThrow(() -> new RuntimeException("Отзыв с id " + reviewID + " не найден"));
         review.setText(request.getText());
         review.setRating(request.getRating());
         return ReviewResponse.fromReview(reviewRepository.save(review));
     }
+
     @Override
-    public void deleteReview(long reviewID){
-        reviewRepository.delete(reviewRepository.findById(reviewID)
-                .orElseThrow(() -> new RuntimeException("Отзыв с id " + reviewID + " не найден")));
+    public void deleteReview(long reviewID) {
+        reviewRepository.delete(reviewRepository.findById(reviewID).orElseThrow(() -> new RuntimeException("Отзыв с id " + reviewID + " не найден")));
     }
+
     @Override
     @Transactional(readOnly = true)
-    public ReviewListResponse getAllReviews(int page, int size){
+    public ReviewListResponse getAllReviews(int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        return ReviewListResponse.fromPage( reviewRepository.findAll(pageable));
+        return ReviewListResponse.fromPage(reviewRepository.findAll(pageable));
     }
+
     @Override
     @Transactional(readOnly = true)
-    public ReviewListResponse getReviewsByProduct(long prodId, int page, int size){
+    public ReviewListResponse getReviewsByProduct(long prodId, int page, int size) {
         Product product = productService.getProductEntityById(prodId);
-
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-
-        return ReviewListResponse.fromPage(reviewRepository.findByProduct(product,pageable));
+        return ReviewListResponse.fromPage(reviewRepository.findByProduct(product, pageable));
     }
-
 }

@@ -50,7 +50,6 @@ class PurchaseServiceImplTest {
         cartItem.setAmount(amount);
 
         PurchaseRequest request = new PurchaseRequest();
-        request.setUserId(userId);
         request.setCartItemId(cartId);
         request.setPurchaseType(PurchaseType.BALANCE);
 
@@ -59,7 +58,7 @@ class PurchaseServiceImplTest {
         doNothing().when(userService).saveUser(any(User.class));
         doNothing().when(shoppingCartService).deleteCartEntity(any(ShoppingCart.class));
 
-        PurchaseResponse response = purchaseService.createPurchase(request);
+        PurchaseResponse response = purchaseService.createPurchase(userId,request);
 
         assertThat(response.getStatus()).isEqualTo("COMPLETED");
         assertThat(response.getMessage()).isEqualTo("Покупка успешно оформлена");
@@ -91,14 +90,13 @@ class PurchaseServiceImplTest {
         cartItem.setAmount(amount);
 
         PurchaseRequest request = new PurchaseRequest();
-        request.setUserId(userId);
         request.setCartItemId(cartId);
         request.setPurchaseType(PurchaseType.BALANCE);
 
         when(shoppingCartService.getCartEntityById(cartId)).thenReturn(cartItem);
         when(userService.getUserEntityById(userId)).thenReturn(user);
 
-        assertThatThrownBy(() -> purchaseService.createPurchase(request))
+        assertThatThrownBy(() -> purchaseService.createPurchase(userId,request))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("Недостаточно средств");
 
@@ -131,14 +129,13 @@ class PurchaseServiceImplTest {
         cartItem.setAmount(1);
 
         PurchaseRequest request = new PurchaseRequest();
-        request.setUserId(userId);
         request.setCartItemId(cartId);
         request.setPurchaseType(PurchaseType.SELLER);
 
         when(shoppingCartService.getCartEntityById(cartId)).thenReturn(cartItem);
         when(userService.getUserEntityById(userId)).thenReturn(buyer);
 
-        PurchaseResponse response = purchaseService.createPurchase(request);
+        PurchaseResponse response = purchaseService.createPurchase(userId,request);
 
         assertThat(response.getStatus()).isEqualTo("PENDING");
         assertThat(response.getMessage()).contains(String.valueOf(sellerId));
@@ -164,14 +161,13 @@ class PurchaseServiceImplTest {
         cartItem.setAmount(1);
 
         PurchaseRequest request = new PurchaseRequest();
-        request.setUserId(userId);
         request.setCartItemId(cartId);
         request.setPurchaseType(PurchaseType.OZON);
 
         when(shoppingCartService.getCartEntityById(cartId)).thenReturn(cartItem);
         when(userService.getUserEntityById(userId)).thenReturn(buyer);
 
-        PurchaseResponse response = purchaseService.createPurchase(request);
+        PurchaseResponse response = purchaseService.createPurchase(userId,request);
 
         assertThat(response.getStatus()).isEqualTo("REDIRECT");
         assertThat(response.getRedirectUrl()).isEqualTo("https://ozon.ru/t/yCwkBpx");

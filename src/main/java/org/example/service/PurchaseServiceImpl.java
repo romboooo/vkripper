@@ -9,19 +9,16 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 
-
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class PurchaseServiceImpl implements PurchaseService{
-
+public class PurchaseServiceImpl implements PurchaseService {
     private final ShoppingCartServiceImpl shoppingCartService;
     private final UserServiceImpl userService;
 
     @Override
-    public PurchaseResponse createPurchase(PurchaseRequest request) {
-        User user = userService.getUserEntityById(request.getUserId());
-
+    public PurchaseResponse createPurchase(Long userId, PurchaseRequest request) {
+        User user = userService.getUserEntityById(userId);
         ShoppingCart cartItem = shoppingCartService.getCartEntityById(request.getCartItemId());
 
         if (cartItem.getUser().getId() != user.getId()) {
@@ -63,12 +60,9 @@ public class PurchaseServiceImpl implements PurchaseService{
             throw new RuntimeException("Недостаточно средств. Требуется: " + totalCost +
                     ", Доступно: " + user.getBalance());
         }
-
         user.setBalance(user.getBalance().subtract(totalCost));
         userService.saveUser(user);
-
         shoppingCartService.deleteCartEntity(cartItem);
-
         return new PurchaseResponse(
                 System.currentTimeMillis(),
                 "COMPLETED",
@@ -77,4 +71,3 @@ public class PurchaseServiceImpl implements PurchaseService{
         );
     }
 }
-
