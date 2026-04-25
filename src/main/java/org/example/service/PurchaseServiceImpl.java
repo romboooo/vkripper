@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.dto.request.PurchaseRequest;
 import org.example.dto.response.PurchaseResponse;
 import org.example.entity.*;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -17,6 +18,7 @@ public class PurchaseServiceImpl implements PurchaseService {
     private final UserServiceImpl userService;
 
     @Override
+    @Secured("BUYER")
     public PurchaseResponse createPurchase(Long userId, PurchaseRequest request) {
         User user = userService.getUserEntityById(userId);
         ShoppingCart cartItem = shoppingCartService.getCartEntityById(request.getCartItemId());

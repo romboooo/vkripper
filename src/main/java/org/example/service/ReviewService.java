@@ -9,7 +9,5 @@ public interface ReviewService {
 
     void deleteReview(long reviewID);
 
-    ReviewListResponse getAllReviews(int page, int size);
-
     ReviewListResponse getReviewsByProduct(long prodId, int page, int size);
 }
