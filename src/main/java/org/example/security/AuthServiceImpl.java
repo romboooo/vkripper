@@ -13,8 +13,11 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.security.auth.Subject;
+import javax.security.auth.login.LoginException;
 import java.math.BigDecimal;
 import java.util.Collections;
+import java.util.List;
 
 
 @Service
@@ -24,6 +27,7 @@ public class AuthServiceImpl implements AuthService{
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final JaasAuthenticator jaasAuthenticator;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -54,13 +58,26 @@ public class AuthServiceImpl implements AuthService{
 
     @Override
     public String login(String username, String password) {
-        UserDetails userDetails = loadUserByUsername(username);
-        if (!passwordEncoder.matches(password, userDetails.getPassword())) {
-            throw new RuntimeException("Неверный пароль");
+        try {
+            Subject subject = jaasAuthenticator.authenticate(username, password);
+
+            UserPrincipal principal = subject.getPrincipals().stream()
+                    .filter(p -> p instanceof UserPrincipal)
+                    .map(p -> (UserPrincipal) p)
+                    .findFirst()
+                    .orElseThrow(() -> new RuntimeException("Principal не найден в Subject"));
+
+            UserDetails userDetails = new CustomUserDetails(
+                    principal.getId(),
+                    principal.getName(),
+                    "",
+                    List.of(new SimpleGrantedAuthority(principal.getRole()))
+            );
+
+            return jwtService.generateToken(userDetails, principal.getId(), principal.getRole());
+        } catch (LoginException e) {
+            throw new RuntimeException("Ошибка аутентификации: " + e.getMessage(), e);
         }
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("Пользователь не найден"));
-        return jwtService.generateToken(userDetails, user.getId(), user.getRole().name());
     }
 
     @Override
