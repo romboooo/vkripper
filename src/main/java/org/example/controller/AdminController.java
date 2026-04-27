@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 public class AdminController {
     private final AuthService authService;
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     @Operation(description = "назначить роль пользователю")
     @PutMapping("/users/{id}/roles")
     public ResponseEntity<String> assignRole(

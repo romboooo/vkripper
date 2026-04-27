@@ -1,3 +1,4 @@
+import org.gradle.internal.classpath.Instrumented.systemProperty
 import org.gradle.kotlin.dsl.implementation
 
 plugins {
@@ -38,4 +39,8 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
+}
+
+tasks.bootRun {
+    systemProperty("java.security.auth.login.config", "file:src/main/resources/jaas.conf")
 }
