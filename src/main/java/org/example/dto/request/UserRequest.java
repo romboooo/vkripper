@@ -1,8 +1,11 @@
 package org.example.dto.request;
 
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
+
+import java.math.BigDecimal;
 
 @Data
 public class UserRequest {
@@ -14,4 +17,7 @@ public class UserRequest {
     @NotBlank(message = "Пароль не может быть пустым")
     @Size(min = 6, message = "Пароль должен содержать минимум 6 символов")
     private String password;
+
+    @Min(0)
+    private BigDecimal amount;
 }
