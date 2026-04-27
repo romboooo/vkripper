@@ -19,26 +19,26 @@ public class PurchaseServiceImpl implements PurchaseService {
 
     @Override
     @Secured("BUYER")
-    public PurchaseResponse createPurchase(Long userId, PurchaseRequest request) {
-        User user = userService.getUserEntityById(userId);
+    public PurchaseResponse createPurchase(Long buyerId, PurchaseRequest request) {
+        User buyer = userService.getUserEntityById(buyerId);
         ShoppingCart cartItem = shoppingCartService.getCartEntityById(request.getCartItemId());
+        User seller = cartItem.getProduct().getSeller();
 
-        if (cartItem.getUser().getId() != user.getId()) {
+        if (cartItem.getUser().getId() != buyer.getId()) {
             throw new RuntimeException("Элемент корзины не принадлежит пользователю");
         }
 
         Product product = cartItem.getProduct();
-        int amount = cartItem.getAmount();
-        BigDecimal totalCost = product.getPrice().multiply(BigDecimal.valueOf(amount));
+        BigDecimal totalCost = product.getPrice().multiply(BigDecimal.valueOf((long) request.getAmount()));
 
         return switch (request.getPurchaseType()) {
-            case SELLER -> handleSellerPurchase(user, product, amount);
-            case OZON -> handleOzonPurchase(user, product);
-            case BALANCE -> handleBalancePurchase(user, product, amount, totalCost, cartItem);
+            case SELLER -> handleSellerPurchase(buyer, product, totalCost);
+            case OZON -> handleOzonPurchase(buyer, product);
+            case BALANCE -> handleBalancePurchase(buyer, seller, totalCost, request.getAmount(), cartItem);
         };
     }
 
-    private PurchaseResponse handleSellerPurchase(User user, Product product, int amount) {
+    private PurchaseResponse handleSellerPurchase(User buyer, Product product, BigDecimal totalCost) {
         Long sellerId = product.getSeller().getId();
         return new PurchaseResponse(
                 null,
@@ -57,14 +57,16 @@ public class PurchaseServiceImpl implements PurchaseService {
         );
     }
 
-    private PurchaseResponse handleBalancePurchase(User user, Product product, int amount, BigDecimal totalCost, ShoppingCart cartItem) {
-        if (user.getBalance().compareTo(totalCost) < 0) {
+    private PurchaseResponse handleBalancePurchase(User buyer, User seller, BigDecimal totalCost, int amount, ShoppingCart cartItem) {
+        if (buyer.getBalance().compareTo(totalCost) < 0) {
             throw new RuntimeException("Недостаточно средств. Требуется: " + totalCost +
-                    ", Доступно: " + user.getBalance());
+                    ", Доступно: " + buyer.getBalance());
         }
-        user.setBalance(user.getBalance().subtract(totalCost));
-        userService.saveUser(user);
-        shoppingCartService.deleteCartEntity(cartItem);
+        buyer.setBalance(buyer.getBalance().subtract(totalCost));
+        seller.setBalance(seller.getBalance().add(totalCost));
+        userService.saveUser(buyer);
+        userService.saveUser(seller);
+        shoppingCartService.updateProductAmount(buyer.getId(), cartItem.getId(), cartItem.getAmount()-amount);
         return new PurchaseResponse(
                 System.currentTimeMillis(),
                 "COMPLETED",
