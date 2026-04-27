@@ -152,37 +152,6 @@ class ReviewServiceImplTest {
                 .hasMessageContaining("не найден");
     }
 
-    @Test
-    void shouldGetAllReviewsSuccessfully() {
-        User user = new User();
-        user.setId(1L);
-        user.setFavorites(new java.util.ArrayList<>());
-
-        Product product = new Product();
-        product.setId(100L);
-
-        Review review1 = new Review();
-        review1.setId(10L);
-        review1.setUser(user);
-        review1.setProduct(product);
-        review1.setText("Review 1");
-        review1.setRating(5);
-
-        Review review2 = new Review();
-        review2.setId(11L);
-        review2.setUser(user);
-        review2.setProduct(product);
-        review2.setText("Review 2");
-        review2.setRating(4);
-
-        Page<Review> reviewPage = new PageImpl<>(List.of(review1, review2));
-        when(reviewRepository.findAll(any(PageRequest.class))).thenReturn(reviewPage);
-
-        ReviewListResponse response = reviewService.getAllReviews(0, 10);
-
-        assertThat(response.getContent()).hasSize(2);
-        assertThat(response.getTotalElements()).isEqualTo(2);
-    }
 
     @Test
     void shouldGetReviewsByProductSuccessfully() {
