@@ -17,7 +17,4 @@ public class UserRequest {
     @NotBlank(message = "Пароль не может быть пустым")
     @Size(min = 6, message = "Пароль должен содержать минимум 6 символов")
     private String password;
-
-    @Min(0)
-    private BigDecimal amount;
 }

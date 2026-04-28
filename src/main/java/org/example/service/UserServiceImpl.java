@@ -6,6 +6,7 @@ import org.example.dto.response.UserResponse;
 import org.example.entity.User;
 import org.example.repository.UserRepository;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -17,7 +18,8 @@ public class UserServiceImpl implements UserService{
     private final UserRepository userRepository;
 
     @Override
-    @Secured("BUYER")
+    //@Secured("BUYER")
+    @PreAuthorize("hasAuthority('BUYER')")
     public UserResponse addMoney(Long id, BigDecimal amount){
         User user = getUserEntityById(id);
         user.setBalance(user.getBalance().add(amount));
@@ -25,7 +27,8 @@ public class UserServiceImpl implements UserService{
         return UserResponse.fromUser(user);
     }
 
-    @Secured("BUYER")
+    //@Secured({"BUYER", "SELLER"})
+    @PreAuthorize("hasAuthority('BUYER')")
     @Override
     public UserResponse witdrawMoney(Long id, BigDecimal amount){
         User user = getUserEntityById(id);

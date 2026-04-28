@@ -3,6 +3,7 @@ package org.example.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.example.dto.request.MoneyRequest;
 import org.example.dto.request.UserRequest;
 import org.example.dto.response.UserResponse;
 import org.example.security.CustomUserDetails;
@@ -21,21 +22,21 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
     private final UserService userService;
 
-    @PostMapping
+    @PostMapping("/addMoney")
     @Operation(summary = "пополнить баланс", description = "пополняет баланс конкретного покупателя")
     public ResponseEntity<UserResponse> addMoney(
-            @Valid @RequestBody UserRequest userRequest,
+            @Valid @RequestBody MoneyRequest moneyRequest,
             @AuthenticationPrincipal CustomUserDetails currentUser){
-        return ResponseEntity.ok(userService.addMoney(currentUser.getId(), userRequest.getAmount()));
+        return ResponseEntity.ok(userService.addMoney(currentUser.getId(), moneyRequest.getAmount()));
     }
 
 
-    @PostMapping
+    @PostMapping("/withdrawMoney")
     @Operation(summary = "вывести деньги", description = "выводит деньги со счета конкретного покупателя")
     public ResponseEntity<UserResponse> withdrawMoney(
-            @Valid @RequestBody UserRequest userRequest,
+            @Valid @RequestBody MoneyRequest moneyRequest,
             @AuthenticationPrincipal CustomUserDetails currentUser){
-        return ResponseEntity.ok(userService.witdrawMoney(currentUser.getId(), userRequest.getAmount()));
+        return ResponseEntity.ok(userService.witdrawMoney(currentUser.getId(), moneyRequest.getAmount()));
     }
 
 }
