@@ -16,5 +16,5 @@ public class PurchaseRequest {
     private PurchaseType purchaseType;
 
     @Min(1)
-    private int amount;
+    private int amountInPurchase;
 }

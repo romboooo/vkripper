@@ -3,13 +3,17 @@ package org.example.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.example.dto.request.ProductRequest;
 import org.example.dto.response.ProductListResponse;
 import org.example.dto.response.ProductResponse;
 import org.example.entity.ProductGroup;
+import org.example.security.CustomUserDetails;
 import org.example.service.ProductService;
 import org.example.service.ProductServiceImpl;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.*;
@@ -60,4 +64,14 @@ public class ProductController {
             @PathVariable Long id) {
         return ResponseEntity.ok(productService.getProductById(id));
     }
+
+    @PostMapping
+    @Operation(summary = "создать товар", description = "создает новый товар у продавца")
+    public ResponseEntity<ProductResponse> createProduct(
+            @Parameter(description = "данные для создания товара")
+            @Valid @RequestBody ProductRequest request,
+            @AuthenticationPrincipal CustomUserDetails currentUser) {
+            return ResponseEntity.ok(productService.createProduct(currentUser.getId(), request));
+    }
+
 }

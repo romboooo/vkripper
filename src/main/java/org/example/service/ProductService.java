@@ -1,5 +1,7 @@
 package org.example.service;
 
+import jakarta.validation.Valid;
+import org.example.dto.request.ProductRequest;
 import org.example.dto.response.ProductListResponse;
 import org.example.dto.response.ProductResponse;
 import org.example.entity.Product;
@@ -18,4 +20,6 @@ public interface ProductService {
     ProductResponse getProductById(Long id);
 
     Product getProductEntityById(Long id);
+
+    ProductResponse createProduct(Long id, ProductRequest request);
 }

@@ -1,16 +1,19 @@
 package org.example.service;
 
 import lombok.RequiredArgsConstructor;
+import org.example.dto.request.ProductRequest;
 import org.example.dto.response.ProductListResponse;
 import org.example.dto.response.ProductResponse;
 import org.example.entity.Product;
 import org.example.entity.ProductGroup;
+import org.example.entity.User;
 import org.example.repository.ProductRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,10 +21,11 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
+@Transactional
 public class ProductServiceImpl implements ProductService{
 
     private final ProductRepository productRepository;
+    private final UserService userService;
 
     @Override
     @Secured({"BUYER", "SELLER", "MODERATOR", "ADMIN"})
@@ -60,5 +64,19 @@ public class ProductServiceImpl implements ProductService{
     public Product getProductEntityById(Long id) {
         return productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Товар с id " + id + " не найден"));
+    }
+
+    @Secured("SELLER")
+    @Override
+    public ProductResponse createProduct(Long userId, ProductRequest request) {
+        Product product = new Product();
+        product.setName(request.getName());
+        product.setPrice(request.getPrice());
+        product.setAvailable(request.isAvailable());
+        product.setProductGroup(request.getProductGroup());
+        product.setSeller(userService.getUserEntityById(userId));
+
+        Product saved = productRepository.save(product);
+        return ProductResponse.fromProduct(saved);
     }
 }

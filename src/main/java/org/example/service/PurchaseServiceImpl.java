@@ -29,12 +29,12 @@ public class PurchaseServiceImpl implements PurchaseService {
         }
 
         Product product = cartItem.getProduct();
-        BigDecimal totalCost = product.getPrice().multiply(BigDecimal.valueOf((long) request.getAmount()));
+        BigDecimal totalCost = product.getPrice().multiply(BigDecimal.valueOf(request.getAmountInPurchase()));
 
         return switch (request.getPurchaseType()) {
             case SELLER -> handleSellerPurchase(buyer, product, totalCost);
             case OZON -> handleOzonPurchase(buyer, product);
-            case BALANCE -> handleBalancePurchase(buyer, seller, totalCost, request.getAmount(), cartItem);
+            case BALANCE -> handleBalancePurchase(buyer, seller, totalCost, request.getAmountInPurchase(), cartItem);
         };
     }
 
@@ -66,7 +66,7 @@ public class PurchaseServiceImpl implements PurchaseService {
         seller.setBalance(seller.getBalance().add(totalCost));
         userService.saveUser(buyer);
         userService.saveUser(seller);
-        shoppingCartService.updateProductAmount(buyer.getId(), cartItem.getId(), cartItem.getAmount()-amount);
+        shoppingCartService.updateProductAmount(buyer.getId(), cartItem.getId(), cartItem.getAmountInCart()-amount);
         return new PurchaseResponse(
                 System.currentTimeMillis(),
                 "COMPLETED",
