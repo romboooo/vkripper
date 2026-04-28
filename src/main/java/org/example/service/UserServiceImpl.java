@@ -18,8 +18,7 @@ public class UserServiceImpl implements UserService{
     private final UserRepository userRepository;
 
     @Override
-    //@Secured("BUYER")
-    @PreAuthorize("hasAuthority('BUYER')")
+    @Secured("BUYER")
     public UserResponse addMoney(Long id, BigDecimal amount){
         User user = getUserEntityById(id);
         user.setBalance(user.getBalance().add(amount));
@@ -27,11 +26,13 @@ public class UserServiceImpl implements UserService{
         return UserResponse.fromUser(user);
     }
 
-    //@Secured({"BUYER", "SELLER"})
-    @PreAuthorize("hasAuthority('BUYER')")
+    @Secured({"BUYER", "SELLER"})
     @Override
     public UserResponse witdrawMoney(Long id, BigDecimal amount){
         User user = getUserEntityById(id);
+        if(user.getBalance().compareTo(amount) < 0){
+            throw new IllegalArgumentException("недостаточно средств на счете");
+        }
         user.setBalance(user.getBalance().subtract(amount));
         saveUser(user);
         return UserResponse.fromUser(user);

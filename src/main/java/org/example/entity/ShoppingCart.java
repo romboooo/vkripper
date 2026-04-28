@@ -17,7 +17,7 @@ public class ShoppingCart {
     private Long id;
 
     @Column(name = "amount", nullable = false)
-    private int amount;
+    private int amountInCart;
 
     @ManyToOne
     @JoinColumn(name = "product_id", nullable = false)

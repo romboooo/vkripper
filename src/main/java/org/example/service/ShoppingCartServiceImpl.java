@@ -62,7 +62,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService{
         ShoppingCart cartItem = new ShoppingCart();
         cartItem.setUser(user);
         cartItem.setProduct(product);
-        cartItem.setAmount(1);
+        cartItem.setAmountInCart(1);
         shoppingCartRepository.save(cartItem);
         return ShoppingCartResponse.fromShoppingCart(cartItem);
     }
@@ -111,7 +111,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService{
         }
 
         ShoppingCart cartItem = cartItems.get(0);
-        cartItem.setAmount(newAmount);
+        cartItem.setAmountInCart(newAmount);
         shoppingCartRepository.save(cartItem);
         return ShoppingCartResponse.fromShoppingCart(cartItem);
     }
