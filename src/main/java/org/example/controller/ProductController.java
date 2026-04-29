@@ -76,7 +76,7 @@ public class ProductController {
 
     @DeleteMapping("/{productId}")
     @Operation(summary = "Удалить товар конкретного продавца", description = "Удаляет товар текущего продавца")
-    public ResponseEntity<String> deleteFromFavorite(
+    public ResponseEntity<String> deleteProduct(
             @Parameter(description = "ID продукта") @PathVariable Long productId,
             @AuthenticationPrincipal CustomUserDetails currentUser
     ) {
