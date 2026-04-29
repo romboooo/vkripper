@@ -13,6 +13,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
@@ -25,14 +26,14 @@ public class FavoriteServiceImpl implements FavoriteService {
     private final UserServiceImpl userService;
 
     @Override
-    @Secured("BUYER")
-    public FavoriteListResponse getCatalog(int page, int size){
+    @PreAuthorize("hasAuthority('BUYER')")
+    public FavoriteListResponse getFavorites(int page, int size){
         Pageable pageable = PageRequest.of(page, size, Sort.by("addedAt"));
         Page<Favorite> favorites = favoriteRepository.findAll(pageable);
         return FavoriteListResponse.fromPage(favorites);
     }
     @Override
-    @Secured("BUYER")
+    @PreAuthorize("hasAuthority('BUYER')")
     public ProductResponse getProductById(Long id){
         Favorite favorite = favoriteRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Favorite not found"));
@@ -45,7 +46,7 @@ public class FavoriteServiceImpl implements FavoriteService {
     }
 
     @Override
-    @Secured("BUYER")
+    @PreAuthorize("hasAuthority('BUYER')")
     public ProductResponse addToFavorite(Long userId, Long productId){
         Product product = productService.getProductEntityById(productId);
         User user = userService.getUserEntityById(userId);
@@ -67,7 +68,7 @@ public class FavoriteServiceImpl implements FavoriteService {
     }
 
     @Override
-    @Secured({"BUYER", "MODERATOR", "ADMIN"})
+    @PreAuthorize("hasAuthority('BUYER') or hasAuthority('MODERATOR') or hasAuthority('ADMIN')")
     public void deleteFromFavorite(Long userId, Long productId){
         List<Favorite> favorites = favoriteRepository.findByUserIdAndProductId(userId, productId);
         if (favorites.isEmpty()) {
