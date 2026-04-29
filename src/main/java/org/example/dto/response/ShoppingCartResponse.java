@@ -17,7 +17,7 @@ public class ShoppingCartResponse {
     public static ShoppingCartResponse fromShoppingCart(ShoppingCart shoppingCart){
         return new ShoppingCartResponse(
                 shoppingCart.getId(),
-                shoppingCart.getAmount(),
+                shoppingCart.getAmountInCart(),
                 ProductResponse.fromProduct(shoppingCart.getProduct()),
                 UserResponse.fromUser(shoppingCart.getUser())
         );

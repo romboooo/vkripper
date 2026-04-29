@@ -48,15 +48,6 @@ public class ReviewController {
         return ResponseEntity.ok("Отзыв удален");
     }
 
-    @GetMapping
-    @Operation(summary = "Получить все отзывы", description = "Возвращает список всех отзывов с пагинацией")
-    public ResponseEntity<ReviewListResponse> getAllReviews(
-            @Parameter(description = "Номер страницы (начиная с 0)") @RequestParam(defaultValue = "0") int page,
-            @Parameter(description = "Количество отзывов на странице") @RequestParam(defaultValue = "20") int size
-    ) {
-        return ResponseEntity.ok(reviewService.getAllReviews(page, size));
-    }
-
     @GetMapping("/product/{productId}")
     @Operation(summary = "Получить отзывы товара", description = "Возвращает отзывы конкретного товара с пагинацией")
     public ResponseEntity<ReviewListResponse> getReviewsByProduct(

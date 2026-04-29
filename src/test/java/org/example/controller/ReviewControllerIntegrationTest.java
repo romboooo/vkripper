@@ -110,22 +110,7 @@ class ReviewControllerIntegrationTest extends IntegrationTestBase {
                 .andExpect(status().isBadRequest());
     }
 
-    @Test
-    void shouldGetAllReviews() throws Exception {
-        ReviewRequest request = new ReviewRequest();
-        request.setProductId(testProduct.getId());
-        request.setText("Test review");
-        request.setRating(4);
-        mockMvc.perform(post("/api/reviews")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)));
-        mockMvc.perform(get("/api/reviews")
-                        .param("page", "0")
-                        .param("size", "10"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content").isArray())
-                .andExpect(jsonPath("$.totalElements", is(1)));
-    }
+
 
     @Test
     void shouldDeleteReviewSuccessfully() throws Exception {

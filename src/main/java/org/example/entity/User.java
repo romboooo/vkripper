@@ -30,11 +30,13 @@ public class User {
     private BigDecimal balance;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Favorite> favorites = new ArrayList<>();
 
     @JsonIgnore
     @Column(name="role", nullable = false)
     @Enumerated(EnumType.STRING)
     private Role role;
+
+    private boolean isBanned = false;
 }

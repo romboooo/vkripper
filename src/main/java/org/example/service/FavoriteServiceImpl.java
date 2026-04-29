@@ -12,6 +12,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
@@ -23,14 +25,15 @@ public class FavoriteServiceImpl implements FavoriteService {
     private final ProductServiceImpl productService;
     private final UserServiceImpl userService;
 
-
     @Override
-    public FavoriteListResponse getCatalog(int page, int size){
+    @PreAuthorize("hasAuthority('BUYER')")
+    public FavoriteListResponse getFavorites(int page, int size){
         Pageable pageable = PageRequest.of(page, size, Sort.by("addedAt"));
         Page<Favorite> favorites = favoriteRepository.findAll(pageable);
         return FavoriteListResponse.fromPage(favorites);
     }
     @Override
+    @PreAuthorize("hasAuthority('BUYER')")
     public ProductResponse getProductById(Long id){
         Favorite favorite = favoriteRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Favorite not found"));
@@ -41,12 +44,12 @@ public class FavoriteServiceImpl implements FavoriteService {
         }
         return ProductResponse.fromProduct(product);
     }
+
     @Override
+    @PreAuthorize("hasAuthority('BUYER')")
     public ProductResponse addToFavorite(Long userId, Long productId){
         Product product = productService.getProductEntityById(productId);
-
         User user = userService.getUserEntityById(userId);
-
 
         if (!product.isAvailable()) {
             throw new RuntimeException("Product with id " + productId + " is not available");
@@ -65,6 +68,7 @@ public class FavoriteServiceImpl implements FavoriteService {
     }
 
     @Override
+    @PreAuthorize("hasAuthority('BUYER') or hasAuthority('MODERATOR') or hasAuthority('ADMIN')")
     public void deleteFromFavorite(Long userId, Long productId){
         List<Favorite> favorites = favoriteRepository.findByUserIdAndProductId(userId, productId);
         if (favorites.isEmpty()) {

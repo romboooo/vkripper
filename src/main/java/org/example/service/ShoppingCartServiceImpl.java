@@ -13,6 +13,8 @@ import org.example.repository.ShoppingCartRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
@@ -27,6 +29,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService{
     private final FavoriteService favoriteService;
 
     @Override
+    @PreAuthorize("hasAuthority('BUYER')")
     public ShoppingCartListResponse getByUserId(Long userId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<ShoppingCart> cartPage = shoppingCartRepository.findByUserId(userId, pageable);
@@ -34,6 +37,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService{
     }
 
     @Override
+    @PreAuthorize("hasAuthority('BUYER')")
     public ProductResponse getProductById(Long productId, Long userId) {
         ShoppingCart cartItem = shoppingCartRepository.findFirstByUserIdAndProductId(userId, productId);
         if (cartItem == null) {
@@ -43,6 +47,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService{
     }
 
     @Override
+    @PreAuthorize("hasAuthority('BUYER')")
     public ShoppingCartResponse addToShoppingCart(Long userId, Long productId) {
         User user = userService.getUserEntityById(userId);
         Product product = productService.getProductEntityById(productId);
@@ -55,16 +60,16 @@ public class ShoppingCartServiceImpl implements ShoppingCartService{
         if (exists) {
             throw new RuntimeException("Товар уже в корзине");
         }
-
         ShoppingCart cartItem = new ShoppingCart();
         cartItem.setUser(user);
         cartItem.setProduct(product);
-        cartItem.setAmount(1);
+        cartItem.setAmountInCart(1);
         shoppingCartRepository.save(cartItem);
         return ShoppingCartResponse.fromShoppingCart(cartItem);
     }
 
     @Override
+    @PreAuthorize("hasAuthority('BUYER')")
     public void deleteFromShoppingCart(Long userId, Long productId) {
         List<ShoppingCart> cartItems = shoppingCartRepository.findByUserIdAndProductId(userId, productId);
         if (cartItems.isEmpty()) {
@@ -74,6 +79,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService{
     }
 
     @Override
+    @PreAuthorize("hasAuthority('BUYER')")
     public void removeAllFromShoppingCart(Long userId) {
         List<ShoppingCart> items = shoppingCartRepository.findAllByUserId(userId);
         if (items.isEmpty()) {
@@ -83,21 +89,18 @@ public class ShoppingCartServiceImpl implements ShoppingCartService{
     }
 
     @Override
+    @PreAuthorize("hasAuthority('BUYER')")
     public void addToFavoriteFromCart(Long userId, Long productId) {
-        // Находим элемент корзины
         List<ShoppingCart> cartItems = shoppingCartRepository.findByUserIdAndProductId(userId, productId);
         if (cartItems.isEmpty()) {
             throw new RuntimeException("Товар не найден в корзине");
         }
-
         ShoppingCart cartItem = cartItems.get(0);
-
-        // Полностью делегируем логику добавления в избранное сервису FavoriteService
-        // Внутри addFavoriteEntity уже есть проверка на дубликат и сохранение
         favoriteService.addFavoriteEntity(cartItem.getUser(), cartItem.getProduct());
     }
 
     @Override
+    @PreAuthorize("hasAuthority('BUYER')")
     public ShoppingCartResponse updateProductAmount(Long userId, Long productId, int newAmount) {
         if (newAmount < 1) {
             throw new RuntimeException("Количество должно быть больше 0");
@@ -109,7 +112,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService{
         }
 
         ShoppingCart cartItem = cartItems.get(0);
-        cartItem.setAmount(newAmount);
+        cartItem.setAmountInCart(newAmount);
         shoppingCartRepository.save(cartItem);
         return ShoppingCartResponse.fromShoppingCart(cartItem);
     }

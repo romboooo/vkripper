@@ -16,6 +16,7 @@ public class UserResponse {
     private String username;
     private BigDecimal balance;
     private List<FavoriteResponse> favorites;
+    private boolean isBanned;
 
     public static UserResponse fromUser(User user) {
         return new UserResponse(
@@ -24,7 +25,8 @@ public class UserResponse {
                 user.getBalance(),
                 user.getFavorites() != null
                         ? user.getFavorites().stream().map(FavoriteResponse::fromFavorite).toList()
-                        : List.of()
+                        : List.of(),
+                user.isBanned()
         );
     }
 }
