@@ -9,10 +9,13 @@ import java.math.BigDecimal;
 public interface UserService {
     UserResponse addMoney(Long id, BigDecimal amount);
 
-    @Secured("BUYER")
     UserResponse witdrawMoney(Long id, BigDecimal amount);
 
     User getUserEntityById(Long id);
 
     void saveUser(User user);
+
+    UserResponse banUser(Long userId);
+
+    UserResponse unbanUser(Long userId);
 }

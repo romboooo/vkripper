@@ -1,6 +1,7 @@
 package org.example.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.dto.request.MoneyRequest;
@@ -12,10 +13,7 @@ import org.example.security.CustomUserDetails;
 import org.example.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 
 @RestController
@@ -40,5 +38,22 @@ public class UserController {
             @AuthenticationPrincipal CustomUserDetails currentUser){
         return ResponseEntity.ok(userService.witdrawMoney(currentUser.getId(),withdrawRequest.getMoneyAmount()));
     }
+
+    @PostMapping("/unban")
+    @Operation(summary = "забанить пользователя", description = "дает возможность администратору банить пользователя")
+    public ResponseEntity<UserResponse> banUser(
+        @Valid @Parameter(description = "ID пользователя")Long userId
+    ){
+        return ResponseEntity.ok(userService.banUser(userId));
+    }
+
+    @PostMapping("/ban")
+    @Operation(summary = "разбанить пользователя", description = "дает возможность администратору разбанить пользователя")
+    public ResponseEntity<UserResponse> unbanUser(
+            @Valid @Parameter(description = "ID пользователя")Long userId
+    ){
+        return ResponseEntity.ok(userService.unbanUser(userId));
+    }
+
 
 }

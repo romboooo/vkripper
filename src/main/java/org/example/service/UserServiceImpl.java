@@ -18,7 +18,7 @@ public class UserServiceImpl implements UserService{
     private final UserRepository userRepository;
 
     @Override
-    @Secured("BUYER")
+    @PreAuthorize("hasAuthority('BUYER')")
     public UserResponse addMoney(Long id, BigDecimal amount){
         User user = getUserEntityById(id);
         user.setBalance(user.getBalance().add(amount));
@@ -26,7 +26,7 @@ public class UserServiceImpl implements UserService{
         return UserResponse.fromUser(user);
     }
 
-    @Secured({"BUYER", "SELLER"})
+    @PreAuthorize("hasAuthority('BUYER') or hasAuthority('SELLER')")
     @Override
     public UserResponse witdrawMoney(Long id, BigDecimal amount){
         User user = getUserEntityById(id);
@@ -46,6 +46,34 @@ public class UserServiceImpl implements UserService{
     @Override
     public void saveUser(User user) {
         userRepository.save(user);
+    }
+
+    @Override
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public UserResponse banUser(Long userId) {
+        User user = getUserEntityById(userId);
+
+        if (user.isBanned()) {
+            throw new IllegalStateException("User is already banned");
+        }
+
+        user.setBanned(true);
+        User saved = userRepository.save(user);
+        return UserResponse.fromUser(saved);
+    }
+
+    @Override
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public UserResponse unbanUser(Long userId) {
+        User user = getUserEntityById(userId);
+
+        if (!user.isBanned()) {
+            throw new IllegalStateException("User is not banned");
+        }
+
+        user.setBanned(false);
+        User saved = userRepository.save(user);
+        return UserResponse.fromUser(saved);
     }
 }
 
