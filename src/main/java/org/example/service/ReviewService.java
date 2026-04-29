@@ -5,9 +5,9 @@ import org.example.dto.response.ReviewListResponse;
 import org.example.dto.response.ReviewResponse;
 public interface ReviewService {
     ReviewResponse createReview(Long userId, ReviewRequest request);
-    ReviewResponse updateReview(long reviewID, ReviewRequest request);
+    ReviewResponse updateReview(Long reviewID, ReviewRequest request);
 
-    void deleteReview(long reviewID);
+    void deleteReview(Long reviewID);
 
-    ReviewListResponse getReviewsByProduct(long prodId, int page, int size);
+    ReviewListResponse getReviewsByProduct(Long prodId, int page, int size);
 }

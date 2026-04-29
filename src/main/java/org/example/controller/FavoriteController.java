@@ -27,7 +27,7 @@ public class FavoriteController {
             @RequestParam(defaultValue = "0") int page,
             @Parameter(description = "Количество товаров на странице")
             @RequestParam(defaultValue = "20") int size) {
-        return ResponseEntity.ok(favoriteService.getCatalog(page, size));
+        return ResponseEntity.ok(favoriteService.getFavorites(page, size));
     }
 
     @GetMapping("/{id}")

@@ -6,6 +6,7 @@ import org.example.dto.request.PurchaseRequest;
 import org.example.dto.response.PurchaseResponse;
 import org.example.entity.*;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -18,7 +19,7 @@ public class PurchaseServiceImpl implements PurchaseService {
     private final UserServiceImpl userService;
 
     @Override
-    @Secured("BUYER")
+    @PreAuthorize("hasAuthority('BUYER')")
     public PurchaseResponse createPurchase(Long buyerId, PurchaseRequest request) {
         User buyer = userService.getUserEntityById(buyerId);
         ShoppingCart cartItem = shoppingCartService.getCartEntityById(request.getCartItemId());
