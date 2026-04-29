@@ -13,6 +13,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,14 +29,15 @@ public class ProductServiceImpl implements ProductService{
     private final UserService userService;
 
     @Override
-    @Secured({"BUYER", "SELLER", "MODERATOR", "ADMIN"})
+    @PreAuthorize("hasAuthority('BUYER') or hasAuthority('SELLER') or hasAuthority('MODERATOR') or hasAuthority('ADMIN')")
     public ProductListResponse getCatalog(int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
         Page<Product> products = productRepository.findByAvailableTrue(pageable);
         return ProductListResponse.fromPage(products);
     }
+
     @Override
-    @Secured({"BUYER", "SELLER", "MODERATOR", "ADMIN"})
+    @PreAuthorize("hasAuthority('BUYER') or hasAuthority('SELLER') or hasAuthority('MODERATOR') or hasAuthority('ADMIN')")
     public List<ProductResponse> searchProducts(String keyword) {
         if (keyword == null || keyword.isBlank()) {
             return List.of();
@@ -47,14 +49,14 @@ public class ProductServiceImpl implements ProductService{
                 .toList();
     }
     @Override
-    @Secured({"BUYER", "SELLER", "MODERATOR", "ADMIN"})
+    @PreAuthorize("hasAuthority('BUYER') or hasAuthority('SELLER') or hasAuthority('MODERATOR') or hasAuthority('ADMIN')")
     public ProductListResponse getProductsByGroup(ProductGroup group, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
         Page<Product> products = productRepository.findByProductGroupAndAvailable(group, true, pageable);
         return ProductListResponse.fromPage(products);
     }
     @Override
-    @Secured({"BUYER", "SELLER", "MODERATOR", "ADMIN"})
+    @PreAuthorize("hasAuthority('BUYER') or hasAuthority('SELLER') or hasAuthority('MODERATOR') or hasAuthority('ADMIN')")
     public ProductResponse getProductById(Long id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Товар не найден"));
@@ -66,7 +68,7 @@ public class ProductServiceImpl implements ProductService{
                 .orElseThrow(() -> new RuntimeException("Товар с id " + id + " не найден"));
     }
 
-    @Secured("SELLER")
+    @PreAuthorize("hasAuthority('SELLER')")
     @Override
     public ProductResponse createProduct(Long userId, ProductRequest request) {
         Product product = new Product();
@@ -78,5 +80,12 @@ public class ProductServiceImpl implements ProductService{
 
         Product saved = productRepository.save(product);
         return ProductResponse.fromProduct(saved);
+    }
+
+    @Override
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MODERATOR') or " +
+            "(hasAuthority('SELLER') and @productServiceImpl.getProductEntityById(#productId).seller.id == #userId)")
+    public void deleteProduct(Long userId, Long productId){
+        productRepository.deleteById(productId);
     }
 }

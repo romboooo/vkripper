@@ -74,4 +74,14 @@ public class ProductController {
             return ResponseEntity.ok(productService.createProduct(currentUser.getId(), request));
     }
 
+    @DeleteMapping("/{productId}")
+    @Operation(summary = "Удалить товар конкретного продавца", description = "Удаляет товар текущего продавца")
+    public ResponseEntity<String> deleteFromFavorite(
+            @Parameter(description = "ID продукта") @PathVariable Long productId,
+            @AuthenticationPrincipal CustomUserDetails currentUser
+    ) {
+        productService.deleteProduct(currentUser.getId(), productId);
+        return ResponseEntity.ok("Удалили товар с id " + productId + " у продавца с id " + currentUser.getId());
+    }
+
 }

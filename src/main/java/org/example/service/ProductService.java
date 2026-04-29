@@ -22,4 +22,7 @@ public interface ProductService {
     Product getProductEntityById(Long id);
 
     ProductResponse createProduct(Long id, ProductRequest request);
+
+    void deleteProduct(Long userId, Long productId);
 }
+
