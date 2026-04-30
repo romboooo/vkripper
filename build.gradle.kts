@@ -1,10 +1,10 @@
-import org.gradle.internal.classpath.Instrumented.systemProperty
 import org.gradle.kotlin.dsl.implementation
 
 plugins {
     id("java")
     id("org.springframework.boot") version "3.2.4"
     id("io.spring.dependency-management") version "1.1.4"
+    id("war")
 }
 
 
@@ -13,7 +13,12 @@ repositories {
 }
 
 dependencies {
-    implementation("org.springframework.boot:spring-boot-starter-web")
+
+    implementation("org.springframework.boot:spring-boot-starter-web") {
+        exclude("org.springframework.boot", "spring-boot-starter-tomcat")
+    }
+
+    implementation("jakarta.servlet:jakarta.servlet-api:6.0.0")
     implementation("org.postgresql:postgresql")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-validation")
@@ -43,4 +48,7 @@ tasks.test {
 
 tasks.bootRun {
     systemProperty("java.security.auth.login.config", "file:src/main/resources/jaas.conf")
+}
+tasks.named<War>("war") {
+    archiveClassifier.set("")
 }
