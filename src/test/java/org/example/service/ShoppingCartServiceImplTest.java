@@ -130,7 +130,7 @@ class ShoppingCartServiceImplTest {
         cartItem.setId(10L);
         cartItem.setUser(user);
         cartItem.setProduct(product);
-        cartItem.setAmount(1);
+        cartItem.setAmountInCart(1);
 
         when(shoppingCartRepository.findByUserIdAndProductId(userId, productId))
                 .thenReturn(java.util.List.of(cartItem));
@@ -158,7 +158,7 @@ class ShoppingCartServiceImplTest {
         cartItem.setId(10L);
         cartItem.setUser(user);
         cartItem.setProduct(product);
-        cartItem.setAmount(1);
+        cartItem.setAmountInCart(1);
 
         when(shoppingCartRepository.findByUserIdAndProductId(userId, productId))
                 .thenReturn(java.util.List.of(cartItem));

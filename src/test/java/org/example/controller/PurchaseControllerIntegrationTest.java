@@ -17,6 +17,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
@@ -45,7 +46,6 @@ class PurchaseControllerIntegrationTest extends IntegrationTestBase {
     @Autowired
     private ShoppingCartRepository shoppingCartRepository;
 
-    private User testUser;
     private Product testProduct;
     private ShoppingCart testCartItem;
 
@@ -56,25 +56,32 @@ class PurchaseControllerIntegrationTest extends IntegrationTestBase {
         shoppingCartRepository.deleteAll();
         SecurityContextHolder.clearContext();
 
-        testUser = new User();
+        User testUser = new User();
         testUser.setUsername("test_user_purchase");
         testUser.setPassword("encoded");
         testUser.setBalance(new BigDecimal("1000.00"));
         testUser.setRole(Role.BUYER);
         testUser = userRepository.save(testUser);
 
+        User seller = new User();
+        seller.setUsername("test_seller");
+        seller.setPassword("encoded");
+        seller.setBalance(BigDecimal.ZERO);
+        seller.setRole(Role.SELLER);
+        seller = userRepository.save(seller);
+
         testProduct = new Product();
         testProduct.setName("Test Product for Purchase");
         testProduct.setPrice(new BigDecimal("50.00"));
         testProduct.setAvailable(true);
         testProduct.setProductGroup(ProductGroup.ELECTRONICS);
-        testProduct.setSeller(testUser);
+        testProduct.setSeller(seller);
         testProduct = productRepository.save(testProduct);
 
         testCartItem = new ShoppingCart();
         testCartItem.setUser(testUser);
         testCartItem.setProduct(testProduct);
-        testCartItem.setAmount(2);
+        testCartItem.setAmountInCart(2);
         testCartItem = shoppingCartRepository.save(testCartItem);
 
         CustomUserDetails userDetails = new CustomUserDetails(
@@ -98,6 +105,7 @@ class PurchaseControllerIntegrationTest extends IntegrationTestBase {
         PurchaseRequest request = new PurchaseRequest();
         request.setCartItemId(testCartItem.getId());
         request.setPurchaseType(PurchaseType.BALANCE);
+        request.setAmountInPurchase(1);
         mockMvc.perform(post("/api/purchases")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -106,11 +114,13 @@ class PurchaseControllerIntegrationTest extends IntegrationTestBase {
                 .andExpect(jsonPath("$.message", is("Покупка успешно оформлена")));
     }
 
+
     @Test
     void shouldCreatePurchaseWithSellerSuccessfully() throws Exception {
         PurchaseRequest request = new PurchaseRequest();
         request.setCartItemId(testCartItem.getId());
         request.setPurchaseType(PurchaseType.SELLER);
+        request.setAmountInPurchase(1);
         mockMvc.perform(post("/api/purchases")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -123,6 +133,7 @@ class PurchaseControllerIntegrationTest extends IntegrationTestBase {
         PurchaseRequest request = new PurchaseRequest();
         request.setCartItemId(testCartItem.getId());
         request.setPurchaseType(PurchaseType.OZON);
+        request.setAmountInPurchase(1);
         mockMvc.perform(post("/api/purchases")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))

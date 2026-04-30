@@ -47,7 +47,7 @@ public class TestDataFactory {
         ShoppingCart cart = new ShoppingCart();
         cart.setUser(user);
         cart.setProduct(product);
-        cart.setAmount(amount);
+        cart.setAmountInCart(amount);
         return cart;
     }
 }
