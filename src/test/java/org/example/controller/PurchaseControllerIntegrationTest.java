@@ -19,6 +19,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 
 import java.math.BigDecimal;
 import java.util.Collections;
@@ -107,6 +108,15 @@ class PurchaseControllerIntegrationTest extends IntegrationTestBase {
         request.setCartItemId(testCartItem.getId());
         request.setPurchaseType(PurchaseType.BALANCE);
         request.setAmountInPurchase(1);
+
+        MvcResult result = mockMvc.perform(post("/api/purchases")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andReturn();
+
+        System.out.println("STATUS: " + result.getResponse().getStatus());
+        System.out.println("BODY: " + result.getResponse().getContentAsString());
+
         mockMvc.perform(post("/api/purchases")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
