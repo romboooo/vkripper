@@ -52,3 +52,12 @@ tasks.bootRun {
 tasks.named<War>("war") {
     archiveClassifier.set("")
 }
+
+configurations {
+    all {
+        exclude(group = "com.zaxxer", module = "HikariCP")
+        exclude(group = "ch.qos.logback", module = "logback-classic")
+        exclude(group = "ch.qos.logback", module = "logback-core")
+        exclude(group = "org.springframework.boot", module = "spring-boot-starter-logging")
+    }
+}
