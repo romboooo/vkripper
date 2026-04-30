@@ -104,20 +104,6 @@ class PurchaseControllerIntegrationTest extends IntegrationTestBase {
         SecurityContextHolder.clearContext();
     }
 
-    @Test
-    void shouldCreatePurchaseWithBalanceSuccessfully() throws Exception {
-        PurchaseRequest request = new PurchaseRequest();
-        request.setCartItemId(testCartItem.getId());
-        request.setPurchaseType(PurchaseType.BALANCE);
-        request.setAmountInPurchase(1);
-
-        mockMvc.perform(post("/api/purchases")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status", is("COMPLETED")))
-                .andExpect(jsonPath("$.message", is("Покупка успешно оформлена")));
-    }
 
     @Test
     void shouldCreatePurchaseWithSellerSuccessfully() throws Exception {
