@@ -30,42 +30,51 @@ class PurchaseServiceImplTest {
 
     @Test
     void shouldCompletePurchaseWithBalance() {
-        Long userId = 1L;
-        Long cartId = 10L;
+        Long userId = 1L, cartId = 10L;
         BigDecimal price = new BigDecimal("100.00");
         int amount = 2;
 
-        User user = new User();
-        user.setId(userId);
-        user.setBalance(new BigDecimal("500.00"));
+        User buyer = new User();
+        buyer.setId(userId);
+        buyer.setBalance(new BigDecimal("500.00"));
+
+        User seller = new User();
+        seller.setId(99L);
+        seller.setBalance(BigDecimal.ZERO);
 
         Product product = new Product();
         product.setId(100L);
         product.setPrice(price);
+        product.setSeller(seller);
 
         ShoppingCart cartItem = new ShoppingCart();
         cartItem.setId(cartId);
-        cartItem.setUser(user);
+        cartItem.setUser(buyer);
         cartItem.setProduct(product);
-        cartItem.setAmount(amount);
+        cartItem.setAmountInCart(amount);
 
         PurchaseRequest request = new PurchaseRequest();
         request.setCartItemId(cartId);
         request.setPurchaseType(PurchaseType.BALANCE);
+        request.setAmountInPurchase(amount);
 
         when(shoppingCartService.getCartEntityById(cartId)).thenReturn(cartItem);
-        when(userService.getUserEntityById(userId)).thenReturn(user);
-        doNothing().when(userService).saveUser(any(User.class));
-        doNothing().when(shoppingCartService).deleteCartEntity(any(ShoppingCart.class));
+        when(userService.getUserEntityById(userId)).thenReturn(buyer);
+        doNothing().when(userService).saveUser(buyer);
+        doNothing().when(userService).saveUser(seller);
+        when(shoppingCartService.updateProductAmount(eq(userId), eq(cartId), eq(0)))
+                .thenReturn(null);
 
-        PurchaseResponse response = purchaseService.createPurchase(userId,request);
+        PurchaseResponse response = purchaseService.createPurchase(userId, request);
 
         assertThat(response.getStatus()).isEqualTo("COMPLETED");
         assertThat(response.getMessage()).isEqualTo("Покупка успешно оформлена");
-        assertThat(user.getBalance()).isEqualByComparingTo(new BigDecimal("300.00"));
+        assertThat(buyer.getBalance()).isEqualByComparingTo(new BigDecimal("300.00"));
+        assertThat(seller.getBalance()).isEqualByComparingTo(new BigDecimal("200.00"));
 
-        verify(userService).saveUser(user);
-        verify(shoppingCartService).deleteCartEntity(cartItem);
+        verify(userService).saveUser(buyer);
+        verify(userService).saveUser(seller);
+        verify(shoppingCartService).updateProductAmount(userId, cartId, 0);
     }
 
     @Test
@@ -75,33 +84,38 @@ class PurchaseServiceImplTest {
         BigDecimal price = new BigDecimal("100.00");
         int amount = 5;
 
-        User user = new User();
-        user.setId(userId);
-        user.setBalance(new BigDecimal("100.00"));
+        User buyer = new User();
+        buyer.setId(userId);
+        buyer.setBalance(new BigDecimal("100.00"));
+
+        User seller = new User();
+        seller.setId(99L);
 
         Product product = new Product();
         product.setId(100L);
         product.setPrice(price);
+        product.setSeller(seller);
 
         ShoppingCart cartItem = new ShoppingCart();
         cartItem.setId(cartId);
-        cartItem.setUser(user);
+        cartItem.setUser(buyer);
         cartItem.setProduct(product);
-        cartItem.setAmount(amount);
+        cartItem.setAmountInCart(amount);
 
         PurchaseRequest request = new PurchaseRequest();
         request.setCartItemId(cartId);
         request.setPurchaseType(PurchaseType.BALANCE);
+        request.setAmountInPurchase(amount);
 
         when(shoppingCartService.getCartEntityById(cartId)).thenReturn(cartItem);
-        when(userService.getUserEntityById(userId)).thenReturn(user);
+        when(userService.getUserEntityById(userId)).thenReturn(buyer);
 
-        assertThatThrownBy(() -> purchaseService.createPurchase(userId,request))
+        assertThatThrownBy(() -> purchaseService.createPurchase(userId, request))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("Недостаточно средств");
 
         verify(userService, never()).saveUser(any());
-        verify(shoppingCartService, never()).deleteCartEntity(any());
+        verify(shoppingCartService, never()).updateProductAmount(anyLong(), anyLong(), anyInt());
     }
 
     @Test
@@ -126,7 +140,7 @@ class PurchaseServiceImplTest {
         cartItem.setId(cartId);
         cartItem.setUser(buyer);
         cartItem.setProduct(product);
-        cartItem.setAmount(1);
+        cartItem.setAmountInCart(1);
 
         PurchaseRequest request = new PurchaseRequest();
         request.setCartItemId(cartId);
@@ -158,7 +172,7 @@ class PurchaseServiceImplTest {
         cartItem.setId(cartId);
         cartItem.setUser(buyer);
         cartItem.setProduct(product);
-        cartItem.setAmount(1);
+        cartItem.setAmountInCart(1);
 
         PurchaseRequest request = new PurchaseRequest();
         request.setCartItemId(cartId);

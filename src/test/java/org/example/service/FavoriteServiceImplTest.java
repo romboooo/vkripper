@@ -60,7 +60,7 @@ class FavoriteServiceImplTest {
         Page<Favorite> favoritePage = new PageImpl<>(List.of(favorite));
         when(favoriteRepository.findAll(any(PageRequest.class))).thenReturn(favoritePage);
 
-        FavoriteListResponse response = favoriteService.getCatalog(0, 10);
+        FavoriteListResponse response = favoriteService.getFavorites(0, 10);
 
         assertThat(response.getContent()).hasSize(1);
         assertThat(response.getTotalElements()).isEqualTo(1);
