@@ -18,6 +18,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
@@ -31,6 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @AutoConfigureMockMvc
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 class PurchaseControllerIntegrationTest extends IntegrationTestBase {
 
     @Autowired
@@ -109,18 +111,9 @@ class PurchaseControllerIntegrationTest extends IntegrationTestBase {
         request.setPurchaseType(PurchaseType.BALANCE);
         request.setAmountInPurchase(1);
 
-        MvcResult result = mockMvc.perform(post("/api/purchases")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andReturn();
-
-        System.out.println("STATUS: " + result.getResponse().getStatus());
-        System.out.println("BODY: " + result.getResponse().getContentAsString());
-
         mockMvc.perform(post("/api/purchases")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andDo(print())   // <-- добавить
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status", is("COMPLETED")))
                 .andExpect(jsonPath("$.message", is("Покупка успешно оформлена")));
