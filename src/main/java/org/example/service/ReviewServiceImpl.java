@@ -11,14 +11,11 @@ import org.example.repository.ReviewRepository;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class ReviewServiceImpl implements ReviewService {
     private final ReviewRepository reviewRepository;
     private final UserServiceImpl userService;
@@ -56,7 +53,6 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    @Transactional(readOnly = true)
     @PreAuthorize("hasAuthority('BUYER') or hasAuthority('SELLER') or hasAuthority('MODERATOR') or hasAuthority('ADMIN')")
     public ReviewListResponse getReviewsByProduct(Long prodId, int page, int size) {
         Product product = productService.getProductEntityById(prodId);
