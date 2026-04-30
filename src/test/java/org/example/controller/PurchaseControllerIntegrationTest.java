@@ -110,12 +110,11 @@ class PurchaseControllerIntegrationTest extends IntegrationTestBase {
         mockMvc.perform(post("/api/purchases")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andDo(print())
+                .andDo(print())   // <-- добавить
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status", is("COMPLETED")))
                 .andExpect(jsonPath("$.message", is("Покупка успешно оформлена")));
     }
-
 
     @Test
     void shouldCreatePurchaseWithSellerSuccessfully() throws Exception {
