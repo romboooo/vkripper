@@ -6,7 +6,6 @@ import lombok.NoArgsConstructor;
 import org.example.entity.User;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -15,7 +14,6 @@ public class UserResponse {
     private Long id;
     private String username;
     private BigDecimal balance;
-    private List<FavoriteResponse> favorites;
     private boolean isBanned;
 
     public static UserResponse fromUser(User user) {
@@ -23,9 +21,6 @@ public class UserResponse {
                 user.getId(),
                 user.getUsername(),
                 user.getBalance(),
-                user.getFavorites() != null
-                        ? user.getFavorites().stream().map(FavoriteResponse::fromFavorite).toList()
-                        : List.of(),
                 user.isBanned()
         );
     }

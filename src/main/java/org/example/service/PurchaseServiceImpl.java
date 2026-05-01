@@ -6,6 +6,7 @@ import org.example.dto.response.PurchaseResponse;
 import org.example.entity.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.math.BigDecimal;
 
@@ -14,6 +15,7 @@ import java.math.BigDecimal;
 public class PurchaseServiceImpl implements PurchaseService {
     private final ShoppingCartServiceImpl shoppingCartService;
     private final UserServiceImpl userService;
+    private final TransactionTemplate transactionTemplate;
 
     @Override
     @PreAuthorize("hasAuthority('BUYER')")
@@ -32,7 +34,13 @@ public class PurchaseServiceImpl implements PurchaseService {
         return switch (request.getPurchaseType()) {
             case SELLER -> handleSellerPurchase(buyer, product, totalCost);
             case OZON -> handleOzonPurchase(buyer, product);
-            case BALANCE -> handleBalancePurchase(buyer, seller, totalCost, request.getAmountInPurchase(), cartItem);
+            case BALANCE -> handleBalancePurchase(
+                    buyer.getId(),
+                    seller.getId(),
+                    totalCost,
+                    request.getAmountInPurchase(),
+                    cartItem.getId()
+            );
         };
     }
 
@@ -55,21 +63,34 @@ public class PurchaseServiceImpl implements PurchaseService {
         );
     }
 
-    private PurchaseResponse handleBalancePurchase(User buyer, User seller, BigDecimal totalCost, int amount, ShoppingCart cartItem) {
+    private PurchaseResponse handleBalancePurchase(Long buyerId, Long sellerId,
+                                                   BigDecimal totalCost, int amount,
+                                                   Long cartItemId) {
+        User buyer = userService.getUserEntityById(buyerId);
         if (buyer.getBalance().compareTo(totalCost) < 0) {
             throw new RuntimeException("Недостаточно средств. Требуется: " + totalCost +
                     ", Доступно: " + buyer.getBalance());
         }
-        buyer.setBalance(buyer.getBalance().subtract(totalCost));
-        seller.setBalance(seller.getBalance().add(totalCost));
-        userService.saveUser(buyer);
-        userService.saveUser(seller);
-        shoppingCartService.updateProductAmount(buyer.getId(), cartItem.getId(), cartItem.getAmountInCart()-amount);
-        return new PurchaseResponse(
-                System.currentTimeMillis(),
-                "COMPLETED",
-                "Покупка успешно оформлена",
-                null
-        );
+
+        return transactionTemplate.execute(status -> {
+            User persistentBuyer = userService.getUserEntityById(buyerId);
+            User persistentSeller = userService.getUserEntityById(sellerId);
+            ShoppingCart persistentCart = shoppingCartService.getCartEntityById(cartItemId);
+
+            persistentBuyer.setBalance(persistentBuyer.getBalance().subtract(totalCost));
+            persistentSeller.setBalance(persistentSeller.getBalance().add(totalCost));
+            userService.saveUser(persistentBuyer);
+            userService.saveUser(persistentSeller);
+
+            int newAmount = persistentCart.getAmountInCart() - amount;
+            shoppingCartService.updateProductAmount(persistentBuyer.getId(), persistentCart.getId(), newAmount);
+
+            return new PurchaseResponse(
+                    System.currentTimeMillis(),
+                    "COMPLETED",
+                    "Покупка успешно оформлена",
+                    null
+            );
+        });
     }
 }
