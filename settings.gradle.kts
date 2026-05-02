@@ -1,1 +1,1 @@
-rootProject.name = "bl_lab1"
+rootProject.name = "vkripper"

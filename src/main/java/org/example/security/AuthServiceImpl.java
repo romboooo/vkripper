@@ -21,7 +21,6 @@ import java.util.List;
 
 
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService{
     private final UserRepository userRepository;
