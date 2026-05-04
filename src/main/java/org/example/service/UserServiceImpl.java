@@ -3,18 +3,28 @@ package org.example.service;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.example.dto.response.UserResponse;
+import org.example.entity.Product;
+import org.example.entity.Review;
+import org.example.entity.Role;
 import org.example.entity.User;
+import org.example.repository.ProductRepository;
+import org.example.repository.ReviewRepository;
 import org.example.repository.UserRepository;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService{
     private final UserRepository userRepository;
+    private final ProductRepository productRepository;
+    private final ReviewRepository reviewRepository;
+    private final TransactionTemplate transactionTemplate;
 
     @Override
     @PreAuthorize("hasAuthority('BUYER')")
@@ -56,9 +66,27 @@ public class UserServiceImpl implements UserService{
             throw new IllegalStateException("User is already banned");
         }
 
-        user.setBanned(true);
-        User saved = userRepository.save(user);
-        return UserResponse.fromUser(saved);
+        return transactionTemplate.execute(status -> {
+            User persistentUser = getUserEntityById(userId);
+            persistentUser.setBanned(true);
+            userRepository.save(persistentUser);
+
+            if (persistentUser.getRole() == Role.SELLER) {
+                List<Product> userProducts = productRepository.findBySellerId(userId);
+                for (Product product : userProducts) {
+                    product.setHidden(true);
+                    product.setAvailable(false);
+                }
+                productRepository.saveAll(userProducts);
+            }
+
+            List<Review> userReviews = reviewRepository.findByUserId(userId);
+            for (Review review : userReviews) {
+                review.setHidden(true);
+            }
+            reviewRepository.saveAll(userReviews);
+            return UserResponse.fromUser(persistentUser);
+                });
     }
 
     @Override
@@ -70,9 +98,29 @@ public class UserServiceImpl implements UserService{
             throw new IllegalStateException("User is not banned");
         }
 
-        user.setBanned(false);
-        User saved = userRepository.save(user);
-        return UserResponse.fromUser(saved);
+        return transactionTemplate.execute(status -> {
+            User persistentUser = getUserEntityById(userId);
+
+            persistentUser.setBanned(false);
+            userRepository.save(persistentUser);
+
+            if (persistentUser.getRole() == Role.SELLER) {
+                List<Product> userProducts = productRepository.findBySellerId(userId);
+                for (Product product : userProducts) {
+                    product.setHidden(false);
+                    product.setAvailable(true);
+                }
+                productRepository.saveAll(userProducts);
+            }
+
+            List<Review> userReviews = reviewRepository.findByUserId(userId);
+            for (Review review : userReviews) {
+                review.setHidden(false);
+            }
+            reviewRepository.saveAll(userReviews);
+
+            return UserResponse.fromUser(persistentUser);
+        });
     }
 }
 

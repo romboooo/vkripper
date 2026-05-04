@@ -40,6 +40,9 @@ public class Review {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
+    @Column(name = "is_Hidden", nullable = false)
+    private boolean isHidden;
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
