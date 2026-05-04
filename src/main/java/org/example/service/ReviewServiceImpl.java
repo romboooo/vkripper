@@ -13,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -23,6 +24,7 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     @PreAuthorize("hasAuthority('BUYER') or (hasAuthority('SELLER') and @productServiceImpl.getProductEntityById(#request.productId).seller.id == #userId)")
+    @Transactional
     public ReviewResponse createReview(Long userId, ReviewRequest request) {
         User user = userService.getUserEntityById(userId);
         Product product = productService.getProductEntityById(request.getProductId());
@@ -39,6 +41,7 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     @PreAuthorize("hasAuthority('BUYER') or hasAuthority('SELLER')")
+    @Transactional
     public ReviewResponse updateReview(Long reviewID, ReviewRequest request) {
         Review review = reviewRepository.findById(reviewID).orElseThrow(() -> new RuntimeException("Отзыв с id " + reviewID + " не найден"));
         review.setText(request.getText());
@@ -48,6 +51,7 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     @PreAuthorize("hasAuthority('BUYER') or hasAuthority('MODERATOR') or hasAuthority('ADMIN')")
+    @Transactional
     public void deleteReview(Long reviewID) {
         reviewRepository.delete(reviewRepository.findById(reviewID).orElseThrow(() -> new RuntimeException("Отзыв с id " + reviewID + " не найден")));
     }

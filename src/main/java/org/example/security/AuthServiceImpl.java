@@ -1,6 +1,5 @@
 package org.example.security;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.example.dto.response.UserResponse;
 import org.example.entity.Role;

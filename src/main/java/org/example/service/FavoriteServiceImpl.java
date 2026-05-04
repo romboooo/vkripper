@@ -1,6 +1,5 @@
 package org.example.service;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.example.dto.response.FavoriteListResponse;
 import org.example.dto.response.ProductResponse;
@@ -15,6 +14,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 
 @Service
@@ -46,6 +47,7 @@ public class FavoriteServiceImpl implements FavoriteService {
 
     @Override
     @PreAuthorize("hasAuthority('BUYER')")
+    @Transactional
     public ProductResponse addToFavorite(Long userId, Long productId){
         Product product = productService.getProductEntityById(productId);
         User user = userService.getUserEntityById(userId);
@@ -68,6 +70,7 @@ public class FavoriteServiceImpl implements FavoriteService {
 
     @Override
     @PreAuthorize("hasAuthority('BUYER') or hasAuthority('MODERATOR') or hasAuthority('ADMIN')")
+    @Transactional
     public void deleteFromFavorite(Long userId, Long productId){
         List<Favorite> favorites = favoriteRepository.findByUserIdAndProductId(userId, productId);
         if (favorites.isEmpty()) {
@@ -79,6 +82,7 @@ public class FavoriteServiceImpl implements FavoriteService {
     }
 
     @Override
+    @Transactional
     public void addFavoriteEntity(User user, Product product) {
         List<Favorite> existingFavorites = favoriteRepository.findByUserAndProduct(user, product);
         if (!existingFavorites.isEmpty()) {
@@ -90,7 +94,7 @@ public class FavoriteServiceImpl implements FavoriteService {
         favorite.setProduct(product);
         favoriteRepository.save(favorite);
     }
-
+    @Transactional
     public void save(Favorite favorite){
         favoriteRepository.save(favorite);
     }

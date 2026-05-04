@@ -1,7 +1,6 @@
 package org.example.service;
 
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.example.dto.response.ProductResponse;
 import org.example.dto.response.ShoppingCartListResponse;
@@ -16,6 +15,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 
 @Service
@@ -47,6 +48,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService{
 
     @Override
     @PreAuthorize("hasAuthority('BUYER')")
+    @Transactional
     public ShoppingCartResponse addToShoppingCart(Long userId, Long productId) {
         User user = userService.getUserEntityById(userId);
         Product product = productService.getProductEntityById(productId);
@@ -69,6 +71,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService{
 
     @Override
     @PreAuthorize("hasAuthority('BUYER')")
+    @Transactional
     public void deleteFromShoppingCart(Long userId, Long productId) {
         List<ShoppingCart> cartItems = shoppingCartRepository.findByUserIdAndProductId(userId, productId);
         if (cartItems.isEmpty()) {
@@ -79,6 +82,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService{
 
     @Override
     @PreAuthorize("hasAuthority('BUYER')")
+    @Transactional
     public void removeAllFromShoppingCart(Long userId) {
         List<ShoppingCart> items = shoppingCartRepository.findAllByUserId(userId);
         if (items.isEmpty()) {
@@ -89,6 +93,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService{
 
     @Override
     @PreAuthorize("hasAuthority('BUYER')")
+    @Transactional
     public void addToFavoriteFromCart(Long userId, Long productId) {
         List<ShoppingCart> cartItems = shoppingCartRepository.findByUserIdAndProductId(userId, productId);
         if (cartItems.isEmpty()) {
@@ -100,6 +105,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService{
 
     @Override
     @PreAuthorize("hasAuthority('BUYER')")
+    @Transactional
     public ShoppingCartResponse updateProductAmount(Long userId, Long productId, int newAmount) {
         if (newAmount < 1) {
             throw new RuntimeException("Количество должно быть больше 0");
@@ -123,6 +129,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService{
     }
 
     @Override
+    @Transactional
     public void deleteCartEntity(ShoppingCart cartItem) {
         shoppingCartRepository.delete(cartItem);
     }
