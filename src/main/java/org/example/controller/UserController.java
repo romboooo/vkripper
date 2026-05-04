@@ -39,7 +39,7 @@ public class UserController {
         return ResponseEntity.ok(userService.witdrawMoney(currentUser.getId(),withdrawRequest.getMoneyAmount()));
     }
 
-    @PostMapping("/unban")
+    @PostMapping("/ban")
     @Operation(summary = "забанить пользователя", description = "дает возможность администратору банить пользователя")
     public ResponseEntity<UserResponse> banUser(
         @Valid @Parameter(description = "ID пользователя")Long userId
@@ -47,7 +47,7 @@ public class UserController {
         return ResponseEntity.ok(userService.banUser(userId));
     }
 
-    @PostMapping("/ban")
+    @PostMapping("/unban")
     @Operation(summary = "разбанить пользователя", description = "дает возможность администратору разбанить пользователя")
     public ResponseEntity<UserResponse> unbanUser(
             @Valid @Parameter(description = "ID пользователя")Long userId

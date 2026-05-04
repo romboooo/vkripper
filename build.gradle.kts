@@ -40,6 +40,8 @@ dependencies {
     runtimeOnly("io.jsonwebtoken:jjwt-impl:0.11.5")
     runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.11.5")
     testImplementation("org.springframework.security:spring-security-test")
+
+    runtimeOnly("org.jboss.slf4j:slf4j-jboss-logmanager:1.2.0.Final")
 }
 
 tasks.test {
@@ -59,5 +61,9 @@ configurations {
         exclude(group = "ch.qos.logback", module = "logback-classic")
         exclude(group = "ch.qos.logback", module = "logback-core")
         exclude(group = "org.springframework.boot", module = "spring-boot-starter-logging")
+
+        exclude(group = "org.slf4j", module = "slf4j-jdk14")
+        exclude(group = "org.slf4j", module = "slf4j-simple")
+        exclude(group = "org.apache.logging.log4j", module = "log4j-slf4j-impl")
     }
 }

@@ -69,6 +69,7 @@ public class ProductServiceImpl implements ProductService{
 
     @PreAuthorize("hasAuthority('SELLER')")
     @Override
+    @Transactional
     public ProductResponse createProduct(Long userId, ProductRequest request) {
         Product product = new Product();
         product.setName(request.getName());
@@ -84,6 +85,7 @@ public class ProductServiceImpl implements ProductService{
     @Override
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MODERATOR') or " +
             "(hasAuthority('SELLER') and @productServiceImpl.getProductEntityById(#productId).seller.id == #userId)")
+    @Transactional
     public void deleteProduct(Long userId, Long productId){
         productRepository.deleteById(productId);
     }

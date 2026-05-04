@@ -77,13 +77,24 @@ public class PurchaseServiceImpl implements PurchaseService {
             User persistentSeller = userService.getUserEntityById(sellerId);
             ShoppingCart persistentCart = shoppingCartService.getCartEntityById(cartItemId);
 
+            int currentAmount = persistentCart.getAmountInCart();
+            if (amount > currentAmount) {
+                throw new RuntimeException("В корзине недостаточно товара. Запрошено: " +
+                        amount + ", доступно: " + currentAmount);
+            }
+
             persistentBuyer.setBalance(persistentBuyer.getBalance().subtract(totalCost));
             persistentSeller.setBalance(persistentSeller.getBalance().add(totalCost));
             userService.saveUser(persistentBuyer);
             userService.saveUser(persistentSeller);
 
-            int newAmount = persistentCart.getAmountInCart() - amount;
-            shoppingCartService.updateProductAmount(persistentBuyer.getId(), persistentCart.getId(), newAmount);
+            int newAmount = currentAmount - amount;
+            if (newAmount > 0) {
+                shoppingCartService.updateProductAmount(persistentBuyer.getId(),
+                        persistentCart.getId(), newAmount);
+            } else {
+                shoppingCartService.deleteCartEntity(persistentCart);
+            }
 
             return new PurchaseResponse(
                     System.currentTimeMillis(),
