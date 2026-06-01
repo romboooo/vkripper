@@ -147,6 +147,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService{
     }
 
 
+
     private void updateShoppingCart(User user) {
         ShoppingCartUpdate update = shoppingCartUpdateRepository.findFirstByUser(user);
 
@@ -162,6 +163,21 @@ public class ShoppingCartServiceImpl implements ShoppingCartService{
         ShoppingCartUpdate update = new ShoppingCartUpdate();
         update.setUser(user);
         return update;
+    }
+
+    @Override
+    @Transactional
+    public int deleteOldShoppingCarts(LocalDateTime threshold) {
+        List<ShoppingCartUpdate> oldUpdates = shoppingCartUpdateRepository.findByLastUpdatedAtBefore(threshold);
+
+        for (ShoppingCartUpdate update : oldUpdates) {
+            User user = update.getUser();
+
+            shoppingCartRepository.deleteAllByUser(user);
+            shoppingCartUpdateRepository.deleteAllByUser(user);
+        }
+
+        return oldUpdates.size();
     }
 
 }

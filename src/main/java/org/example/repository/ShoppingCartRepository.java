@@ -2,9 +2,12 @@ package org.example.repository;
 
 import org.example.entity.Product;
 import org.example.entity.ShoppingCart;
+import org.example.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface ShoppingCartRepository extends JpaRepository<ShoppingCart, Long> {
@@ -17,4 +20,5 @@ public interface ShoppingCartRepository extends JpaRepository<ShoppingCart, Long
     List<ShoppingCart> findByUserIdAndProductId(Long userId, Long productId);
 
     ShoppingCart findFirstByUserIdAndProductId(Long userId, Long productId);
+    void deleteAllByUser(User user);
 }
