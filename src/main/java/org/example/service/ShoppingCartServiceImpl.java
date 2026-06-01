@@ -7,8 +7,10 @@ import org.example.dto.response.ShoppingCartListResponse;
 import org.example.dto.response.ShoppingCartResponse;
 import org.example.entity.Product;
 import org.example.entity.ShoppingCart;
+import org.example.entity.ShoppingCartUpdate;
 import org.example.entity.User;
 import org.example.repository.ShoppingCartRepository;
+import org.example.repository.ShoppingCartUpdateRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -17,6 +19,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -24,6 +27,7 @@ import java.util.List;
 public class ShoppingCartServiceImpl implements ShoppingCartService{
 
     private final ShoppingCartRepository shoppingCartRepository;
+    private final ShoppingCartUpdateRepository shoppingCartUpdateRepository;
     private final ProductService productService;
     private final UserServiceImpl userService;
     private final FavoriteService favoriteService;
@@ -66,6 +70,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService{
         cartItem.setProduct(product);
         cartItem.setAmountInCart(1);
         shoppingCartRepository.save(cartItem);
+        updateShoppingCart(user);
         return ShoppingCartResponse.fromShoppingCart(cartItem);
     }
 
@@ -73,22 +78,26 @@ public class ShoppingCartServiceImpl implements ShoppingCartService{
     @PreAuthorize("hasAuthority('BUYER')")
     @Transactional
     public void deleteFromShoppingCart(Long userId, Long productId) {
+        User user = userService.getUserEntityById(userId);
         List<ShoppingCart> cartItems = shoppingCartRepository.findByUserIdAndProductId(userId, productId);
         if (cartItems.isEmpty()) {
             throw new RuntimeException("Товар не найден в корзине");
         }
         shoppingCartRepository.deleteAll(cartItems);
+        updateShoppingCart(user);
     }
 
     @Override
     @PreAuthorize("hasAuthority('BUYER')")
     @Transactional
     public void removeAllFromShoppingCart(Long userId) {
+        User user = userService.getUserEntityById(userId);
         List<ShoppingCart> items = shoppingCartRepository.findAllByUserId(userId);
         if (items.isEmpty()) {
             throw new RuntimeException("Корзина пуста");
         }
         shoppingCartRepository.deleteAll(items);
+        updateShoppingCart(user);
     }
 
     @Override
@@ -111,6 +120,8 @@ public class ShoppingCartServiceImpl implements ShoppingCartService{
             throw new RuntimeException("Количество должно быть больше 0");
         }
 
+        User user = userService.getUserEntityById(userId);
+
         List<ShoppingCart> cartItems = shoppingCartRepository.findByUserIdAndProductId(userId, productId);
         if (cartItems.isEmpty()) {
             throw new RuntimeException("Товар не найден в корзине");
@@ -119,6 +130,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService{
         ShoppingCart cartItem = cartItems.get(0);
         cartItem.setAmountInCart(newAmount);
         shoppingCartRepository.save(cartItem);
+        updateShoppingCart(user);
         return ShoppingCartResponse.fromShoppingCart(cartItem);
     }
 
@@ -133,4 +145,23 @@ public class ShoppingCartServiceImpl implements ShoppingCartService{
     public void deleteCartEntity(ShoppingCart cartItem) {
         shoppingCartRepository.delete(cartItem);
     }
+
+
+    private void updateShoppingCart(User user) {
+        ShoppingCartUpdate update = shoppingCartUpdateRepository.findFirstByUser(user);
+
+        if (update == null) {
+            update = createShoppingCartUpdate(user);
+        }
+
+        update.setLastUpdatedAt(LocalDateTime.now());
+        shoppingCartUpdateRepository.save(update);
+    }
+
+    private ShoppingCartUpdate createShoppingCartUpdate(User user) {
+        ShoppingCartUpdate update = new ShoppingCartUpdate();
+        update.setUser(user);
+        return update;
+    }
+
 }
