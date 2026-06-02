@@ -5,14 +5,11 @@ import org.example.common.entity.Payment;
 import org.example.common.entity.PurchaseOrder;
 import org.example.common.enums.PaymentStatus;
 import org.example.common.enums.PurchaseOrderStatus;
-import org.example.common.event.PaymentRequestedEvent;
 import org.example.common.repository.PaymentRepository;
 import org.example.common.repository.PurchaseOrderRepository;
 import org.example.dto.request.PurchaseRequest;
 import org.example.dto.response.PurchaseResponse;
 import org.example.entity.*;
-import org.example.messaging.MqttPaymentPublisher;
-import org.example.messaging.PaymentRequestedEventFactory;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -27,8 +24,6 @@ public class PurchaseServiceImpl implements PurchaseService {
     private final TransactionTemplate transactionTemplate;
     private final PurchaseOrderRepository purchaseOrderRepository;
     private final PaymentRepository paymentRepository;
-    private final PaymentRequestedEventFactory paymentRequestedEventFactory;
-    private final MqttPaymentPublisher mqttPaymentPublisher;
 
     @Override
     @PreAuthorize("hasAuthority('BUYER')")
@@ -85,8 +80,9 @@ public class PurchaseServiceImpl implements PurchaseService {
                     ", Доступно: " + buyer.getBalance());
         }
 
-        PaymentRequestedEvent event = transactionTemplate.execute(status -> {
+        return transactionTemplate.execute(status -> {
             User persistentBuyer = userService.getUserEntityById(buyerId);
+            User persistentSeller = userService.getUserEntityById(sellerId);
             ShoppingCart persistentCart = shoppingCartService.getCartEntityById(cartItemId);
 
             int currentAmount = persistentCart.getAmountInCart();
@@ -101,7 +97,7 @@ public class PurchaseServiceImpl implements PurchaseService {
             order.setCartItemId(persistentCart.getId());
             order.setAmount(totalCost);
             order.setCurrency("RUB");
-            order.setStatus(PurchaseOrderStatus.PAYMENT_PENDING);
+            order.setStatus(PurchaseOrderStatus.PAID);
             order = purchaseOrderRepository.save(order);
 
             Payment payment = new Payment();
@@ -109,8 +105,13 @@ public class PurchaseServiceImpl implements PurchaseService {
             payment.setUserId(persistentBuyer.getId());
             payment.setAmount(totalCost);
             payment.setCurrency("RUB");
-            payment.setStatus(PaymentStatus.PENDING);
-            payment = paymentRepository.save(payment);
+            payment.setStatus(PaymentStatus.SUCCESS);
+            paymentRepository.save(payment);
+
+            persistentBuyer.setBalance(persistentBuyer.getBalance().subtract(totalCost));
+            persistentSeller.setBalance(persistentSeller.getBalance().add(totalCost));
+            userService.saveUser(persistentBuyer);
+            userService.saveUser(persistentSeller);
 
             int newAmount = currentAmount - amount;
             if (newAmount > 0) {
@@ -120,16 +121,12 @@ public class PurchaseServiceImpl implements PurchaseService {
                 shoppingCartService.deleteCartEntity(persistentCart);
             }
 
-            return paymentRequestedEventFactory.create(payment);
+            return new PurchaseResponse(
+                    order.getId(),
+                    "COMPLETED",
+                    "Покупка успешно оформлена",
+                    null
+            );
         });
-
-        mqttPaymentPublisher.publishPaymentRequested(event);
-
-        return new PurchaseResponse(
-                event.orderId(),
-                "PAYMENT_PENDING",
-                "Покупка создана, платёж ожидает обработки",
-                null
-        );
     }
 }
