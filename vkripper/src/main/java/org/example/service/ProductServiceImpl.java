@@ -28,7 +28,6 @@ public class ProductServiceImpl implements ProductService{
     private final UserService userService;
 
     @Override
-    @PreAuthorize("hasAuthority('BUYER') or hasAuthority('SELLER') or hasAuthority('MODERATOR') or hasAuthority('ADMIN')")
     public ProductListResponse getCatalog(int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
         Page<Product> products = productRepository.findByAvailableTrue(pageable);
@@ -36,7 +35,6 @@ public class ProductServiceImpl implements ProductService{
     }
 
     @Override
-    @PreAuthorize("hasAuthority('BUYER') or hasAuthority('SELLER') or hasAuthority('MODERATOR') or hasAuthority('ADMIN')")
     public List<ProductResponse> searchProducts(String keyword) {
         if (keyword == null || keyword.isBlank()) {
             return List.of();
@@ -48,14 +46,12 @@ public class ProductServiceImpl implements ProductService{
                 .toList();
     }
     @Override
-    @PreAuthorize("hasAuthority('BUYER') or hasAuthority('SELLER') or hasAuthority('MODERATOR') or hasAuthority('ADMIN')")
     public ProductListResponse getProductsByGroup(ProductGroup group, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
         Page<Product> products = productRepository.findByProductGroupAndAvailable(group, true, pageable);
         return ProductListResponse.fromPage(products);
     }
     @Override
-    @PreAuthorize("hasAuthority('BUYER') or hasAuthority('SELLER') or hasAuthority('MODERATOR') or hasAuthority('ADMIN')")
     public ProductResponse getProductById(Long id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Товар не найден"));
