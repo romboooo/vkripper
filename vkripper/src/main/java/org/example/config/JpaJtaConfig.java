@@ -40,6 +40,7 @@ public class JpaJtaConfig {
                 "org.hibernate.engine.transaction.jta.platform.internal.JBossAppServerJtaPlatform");
         jpaProperties.setProperty("hibernate.dialect", "org.hibernate.dialect.PostgreSQLDialect");
         jpaProperties.setProperty("hibernate.transaction.coordinator_class", "jta");
+        jpaProperties.setProperty("hibernate.hbm2ddl.auto", "update");
         em.setJpaProperties(jpaProperties);
         return em;
     }
