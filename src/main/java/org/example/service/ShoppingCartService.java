@@ -4,6 +4,9 @@ import org.example.dto.response.ProductResponse;
 import org.example.dto.response.ShoppingCartListResponse;
 import org.example.dto.response.ShoppingCartResponse;
 import org.example.entity.ShoppingCart;
+import org.example.entity.User;
+
+import java.time.LocalDateTime;
 
 public interface ShoppingCartService {
 
@@ -24,4 +27,6 @@ public interface ShoppingCartService {
     ShoppingCart getCartEntityById(Long id);
 
     void deleteCartEntity(ShoppingCart cartItem);
+
+    int deleteOldShoppingCarts(LocalDateTime threshold);
 }
