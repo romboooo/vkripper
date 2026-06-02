@@ -1,69 +1,37 @@
-import org.gradle.kotlin.dsl.implementation
-
 plugins {
-    id("java")
-    id("org.springframework.boot") version "3.2.4"
-    id("io.spring.dependency-management") version "1.1.4"
-    id("war")
+    id("org.springframework.boot") version "3.2.4" apply false
+    id("io.spring.dependency-management") version "1.1.4" apply false
 }
 
+allprojects {
+    group = "org.example"
+    version = "0.0.1-SNAPSHOT"
 
-repositories {
-    mavenCentral()
-}
-
-dependencies {
-
-    implementation("org.springframework.boot:spring-boot-starter-web") {
-        exclude("org.springframework.boot", "spring-boot-starter-tomcat")
+    repositories {
+        mavenCentral()
     }
-
-    implementation("jakarta.servlet:jakarta.servlet-api:6.0.0")
-    implementation("org.postgresql:postgresql")
-    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-    implementation("org.springframework.boot:spring-boot-starter-validation")
-
-    compileOnly("org.projectlombok:lombok:1.18.32")
-
-    annotationProcessor("org.projectlombok:lombok:1.18.32")
-    testCompileOnly("org.projectlombok:lombok:1.18.32")
-    testAnnotationProcessor("org.projectlombok:lombok:1.18.32")
-
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0")
-
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testImplementation("com.h2database:h2:2.2.224")
-
-    implementation("org.springframework.boot:spring-boot-starter-security")
-
-    implementation("io.jsonwebtoken:jjwt-api:0.11.5")
-    runtimeOnly("io.jsonwebtoken:jjwt-impl:0.11.5")
-    runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.11.5")
-    testImplementation("org.springframework.security:spring-security-test")
-
-    runtimeOnly("org.jboss.slf4j:slf4j-jboss-logmanager:1.2.0.Final")
 }
 
-tasks.test {
-    useJUnitPlatform()
-}
+subprojects {
+    plugins.withType<JavaPlugin> {
+        extensions.configure<JavaPluginExtension> {
+            toolchain {
+                languageVersion.set(JavaLanguageVersion.of(17))
+            }
+        }
 
-tasks.bootRun {
-    systemProperty("java.security.auth.login.config", "file:src/main/resources/jaas.conf")
-}
-tasks.named<War>("war") {
-    archiveClassifier.set("")
-}
+        tasks.withType<Test> {
+            useJUnitPlatform()
+        }
 
-configurations {
-    all {
-        exclude(group = "com.zaxxer", module = "HikariCP")
-        exclude(group = "ch.qos.logback", module = "logback-classic")
-        exclude(group = "ch.qos.logback", module = "logback-core")
-        exclude(group = "org.springframework.boot", module = "spring-boot-starter-logging")
-
-        exclude(group = "org.slf4j", module = "slf4j-jdk14")
-        exclude(group = "org.slf4j", module = "slf4j-simple")
-        exclude(group = "org.apache.logging.log4j", module = "log4j-slf4j-impl")
+        configurations.all {
+            exclude(group = "com.zaxxer", module = "HikariCP")
+            exclude(group = "ch.qos.logback", module = "logback-classic")
+            exclude(group = "ch.qos.logback", module = "logback-core")
+            exclude(group = "org.springframework.boot", module = "spring-boot-starter-logging")
+            exclude(group = "org.slf4j", module = "slf4j-jdk14")
+            exclude(group = "org.slf4j", module = "slf4j-simple")
+            exclude(group = "org.apache.logging.log4j", module = "log4j-slf4j-impl")
+        }
     }
 }
