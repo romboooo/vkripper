@@ -1,1 +1,5 @@
-rootProject.name = "vkripper"
+rootProject.name = "blps"
+
+include("common")
+include("vkripper")
+include("banking-node")
