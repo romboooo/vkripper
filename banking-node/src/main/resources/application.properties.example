@@ -7,12 +7,5 @@ spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
 
 app.jms.broker-url=tcp://localhost:61616
 app.jms.payment-destination=Consumer.banking.VirtualTopic.payment.requested
-app.jms.username=admin
-app.jms.password=admin
-
-app.jira.enabled=true
-app.jira.base-url=https://vkripper.atlassian.net
-app.jira.issue-type=Task
-app.jira.project-key=KAN
-app.jira.email=
-app.jira.api-token=
+app.jms.username=
+app.jms.password=

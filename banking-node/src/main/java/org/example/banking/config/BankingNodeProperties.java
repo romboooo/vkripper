@@ -7,7 +7,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @Data
 public class BankingNodeProperties {
     private String brokerUrl = "tcp://localhost:61616";
-    private String paymentDestination = "payment.requested";
+    private String paymentDestination = "Consumer.banking.VirtualTopic.payment.requested";
     private String username;
     private String password;
 
