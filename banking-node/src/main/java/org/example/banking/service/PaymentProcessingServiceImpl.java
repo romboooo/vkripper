@@ -3,6 +3,7 @@ package org.example.banking.service;
 import org.example.banking.jca.BankEisClient;
 import org.example.banking.jca.BankPaymentRequest;
 import org.example.banking.jca.BankPaymentResult;
+import org.example.banking.jira.JiraIssueService;
 import org.example.common.entity.Payment;
 import org.example.common.entity.PurchaseOrder;
 import org.example.common.enums.PaymentStatus;
@@ -10,25 +11,30 @@ import org.example.common.enums.PurchaseOrderStatus;
 import org.example.common.event.PaymentRequestedEvent;
 import org.example.common.repository.PaymentRepository;
 import org.example.common.repository.PurchaseOrderRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 
+@Slf4j
 @Service
 public class PaymentProcessingServiceImpl implements PaymentProcessingService {
     private final PaymentRepository paymentRepository;
     private final PurchaseOrderRepository purchaseOrderRepository;
     private final BankEisClient bankEisClient;
+    private final JiraIssueService jiraIssueService;
 
     public PaymentProcessingServiceImpl(
             PaymentRepository paymentRepository,
             PurchaseOrderRepository purchaseOrderRepository,
-            BankEisClient bankEisClient
+            BankEisClient bankEisClient,
+            JiraIssueService jiraIssueService
     ) {
         this.paymentRepository = paymentRepository;
         this.purchaseOrderRepository = purchaseOrderRepository;
         this.bankEisClient = bankEisClient;
+        this.jiraIssueService = jiraIssueService;
     }
 
     @Override
@@ -66,12 +72,28 @@ public class PaymentProcessingServiceImpl implements PaymentProcessingService {
                 payment.setErrorCode(result.errorCode());
                 payment.setErrorMessage(result.errorMessage());
                 order.setStatus(PurchaseOrderStatus.PAYMENT_FAILED);
+                createJiraIssue(payment, order, result.errorCode(), result.errorMessage());
             }
         } catch (RuntimeException e) {
             payment.setStatus(PaymentStatus.RETRY_PENDING);
             payment.setRetryCount(payment.getRetryCount() + 1);
             payment.setErrorCode("TECHNICAL_ERROR");
             payment.setErrorMessage(e.getMessage());
+            createJiraIssue(payment, order, "TECHNICAL_ERROR", e.getMessage());
+        }
+    }
+
+    private void createJiraIssue(Payment payment, PurchaseOrder order, String errorCode, String errorMessage) {
+        try {
+            jiraIssueService.createPaymentProblemIssue(
+                    payment.getId(),
+                    order.getId(),
+                    payment.getUserId(),
+                    errorCode,
+                    errorMessage
+            );
+        } catch (RuntimeException jiraException) {
+            log.warn("Failed to create Jira issue for paymentId={}", payment.getId(), jiraException);
         }
     }
 }

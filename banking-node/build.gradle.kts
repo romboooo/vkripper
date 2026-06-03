@@ -11,7 +11,6 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web") {
         exclude("org.springframework.boot", "spring-boot-starter-tomcat")
     }
-    implementation("org.springframework.boot:spring-boot-starter-log4j2")
     compileOnly("org.projectlombok:lombok:1.18.32")
     annotationProcessor("org.projectlombok:lombok:1.18.32")
     testCompileOnly("org.projectlombok:lombok:1.18.32")
@@ -25,6 +24,7 @@ dependencies {
     runtimeOnly("org.postgresql:postgresql")
 
     implementation("org.springframework:spring-jms")
+    runtimeOnly("org.jboss.slf4j:slf4j-jboss-logmanager:1.2.0.Final")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("com.h2database:h2:2.2.224")
 }
