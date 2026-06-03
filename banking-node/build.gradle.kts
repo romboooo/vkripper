@@ -12,6 +12,7 @@ dependencies {
         exclude("org.springframework.boot", "spring-boot-starter-tomcat")
     }
     providedRuntime("org.springframework.boot:spring-boot-starter-tomcat")
+    compileOnly("jakarta.servlet:jakarta.servlet-api:6.0.0")
     implementation("org.springframework.boot:spring-boot-starter-activemq")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-validation")

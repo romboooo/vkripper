@@ -38,27 +38,47 @@ banking-node: http://localhost:8180
 
 ## Messaging
 
-`vkripper` creates a purchase order and pending payment, then publishes `PaymentRequestedEvent` to MQTT topic `payment.requested`.
+`vkripper` creates a purchase order and pending payment, then publishes `PaymentRequestedEvent` to MQTT topic `VirtualTopic/payment/requested`.
 
-`banking-node` listens to JMS destination `payment.requested`, deserializes the same event from `common`, processes payment through `BankEisClient`, and updates payment/order statuses.
+`banking-node` listens to JMS queue `Consumer.banking.VirtualTopic.payment.requested`, deserializes the same event from `common`, processes payment through `BankEisClient`, transfers buyer/seller balances, and updates payment/order statuses.
+
+The `VirtualTopic` naming pattern keeps MQTT publishing simple while the JMS side consumes from a real queue.
 
 Main app MQTT properties:
 
 ```properties
 app.mqtt.broker-url=tcp://localhost:1883
 app.mqtt.client-id=vkripper
-app.mqtt.payment-topic=payment.requested
-app.mqtt.username=
-app.mqtt.password=
+app.mqtt.payment-topic=VirtualTopic/payment/requested
+app.mqtt.username=admin
+app.mqtt.password=admin
 ```
 
 Banking node JMS properties:
 
 ```properties
 app.jms.broker-url=tcp://localhost:61616
-app.jms.payment-destination=payment.requested
-app.jms.username=
-app.jms.password=
+app.jms.payment-destination=Consumer.banking.VirtualTopic.payment.requested
+app.jms.username=admin
+app.jms.password=admin
+```
+
+ActiveMQ Classic users for the Helios deployment:
+
+```text
+admin/admin
+rmb/rmb
+shmi/shmi
+```
+
+Helios deployment:
+
+```text
+ActiveMQ Classic: ~/blps/activemq/apache-activemq-5.18.5
+WildFly deployments: ~/blps/wildfly-39.0.1.Final/standalone/deployments
+Start script: ~/blps/start.sh
+Main app through SSH alias ports: http://localhost:17272/vkripper
+ActiveMQ console through SSH alias apacheports: http://localhost:8161/admin/
 ```
 
 The current `BankEisClientStub` is a placeholder for the future JCA resource adapter integration.
