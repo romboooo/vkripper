@@ -10,6 +10,7 @@ import org.example.common.enums.PurchaseOrderStatus;
 import org.example.common.event.PaymentRequestedEvent;
 import org.example.common.repository.PaymentRepository;
 import org.example.common.repository.PurchaseOrderRepository;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,15 +21,18 @@ public class PaymentProcessingServiceImpl implements PaymentProcessingService {
     private final PaymentRepository paymentRepository;
     private final PurchaseOrderRepository purchaseOrderRepository;
     private final BankEisClient bankEisClient;
+    private final JdbcTemplate jdbcTemplate;
 
     public PaymentProcessingServiceImpl(
             PaymentRepository paymentRepository,
             PurchaseOrderRepository purchaseOrderRepository,
-            BankEisClient bankEisClient
+            BankEisClient bankEisClient,
+            JdbcTemplate jdbcTemplate
     ) {
         this.paymentRepository = paymentRepository;
         this.purchaseOrderRepository = purchaseOrderRepository;
         this.bankEisClient = bankEisClient;
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     @Override
@@ -46,32 +50,56 @@ public class PaymentProcessingServiceImpl implements PaymentProcessingService {
 
         payment.setStatus(PaymentStatus.PROCESSING);
 
+        BankPaymentResult result;
         try {
-            BankPaymentResult result = bankEisClient.processPayment(new BankPaymentRequest(
+            result = bankEisClient.processPayment(new BankPaymentRequest(
                     payment.getId(),
                     payment.getOrderId(),
                     payment.getUserId(),
                     payment.getAmount(),
                     payment.getCurrency()
             ));
-
-            payment.setProcessedAt(Instant.now());
-            if (result.success()) {
-                payment.setStatus(PaymentStatus.SUCCESS);
-                payment.setExternalTransactionId(result.externalTransactionId());
-                order.setStatus(PurchaseOrderStatus.PAID);
-                order.setPaidAt(Instant.now());
-            } else {
-                payment.setStatus(PaymentStatus.FAILED);
-                payment.setErrorCode(result.errorCode());
-                payment.setErrorMessage(result.errorMessage());
-                order.setStatus(PurchaseOrderStatus.PAYMENT_FAILED);
-            }
         } catch (RuntimeException e) {
             payment.setStatus(PaymentStatus.RETRY_PENDING);
             payment.setRetryCount(payment.getRetryCount() + 1);
             payment.setErrorCode("TECHNICAL_ERROR");
             payment.setErrorMessage(e.getMessage());
+            return;
+        }
+
+        payment.setProcessedAt(Instant.now());
+        if (result.success()) {
+            transferBalance(order);
+            payment.setStatus(PaymentStatus.SUCCESS);
+            payment.setExternalTransactionId(result.externalTransactionId());
+            order.setStatus(PurchaseOrderStatus.PAID);
+            order.setPaidAt(Instant.now());
+        } else {
+            payment.setStatus(PaymentStatus.FAILED);
+            payment.setErrorCode(result.errorCode());
+            payment.setErrorMessage(result.errorMessage());
+            order.setStatus(PurchaseOrderStatus.PAYMENT_FAILED);
+        }
+    }
+
+    private void transferBalance(PurchaseOrder order) {
+        int buyerRows = jdbcTemplate.update(
+                "update users set balance = balance - ? where id = ? and balance >= ?",
+                order.getAmount(),
+                order.getBuyerId(),
+                order.getAmount()
+        );
+        if (buyerRows != 1) {
+            throw new IllegalStateException("Buyer has insufficient balance for order " + order.getId());
+        }
+
+        int sellerRows = jdbcTemplate.update(
+                "update users set balance = balance + ? where id = ?",
+                order.getAmount(),
+                order.getSellerId()
+        );
+        if (sellerRows != 1) {
+            throw new IllegalStateException("Seller not found for order " + order.getId());
         }
     }
 }
