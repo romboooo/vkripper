@@ -9,3 +9,12 @@ app.jms.broker-url=tcp://localhost:61616
 app.jms.payment-destination=Consumer.banking.VirtualTopic.payment.requested
 app.jms.username=
 app.jms.password=
+
+app.banking.stub.force-failure=false
+
+app.jira.enabled=false
+app.jira.base-url=
+app.jira.email=
+app.jira.api-token=
+app.jira.project-key=
+app.jira.issue-type=Task
