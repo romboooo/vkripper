@@ -1,4 +1,4 @@
-package org.example.banking.jca;
+package org.example.finance.jca;
 
 public record BankPaymentResult(
         boolean success,

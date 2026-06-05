@@ -1,4 +1,4 @@
-package org.example.banking.jca;
+package org.example.finance.jca;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -9,7 +9,7 @@ import java.util.UUID;
 public class BankEisClientStub implements BankEisClient {
     private final boolean forceFailure;
 
-    public BankEisClientStub(@Value("${app.banking.stub.force-failure:false}") boolean forceFailure) {
+    public BankEisClientStub(@Value("${app.finance.stub.force-failure:false}") boolean forceFailure) {
         this.forceFailure = forceFailure;
     }
 

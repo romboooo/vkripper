@@ -1,4 +1,4 @@
-package org.example.banking.config;
+package org.example.finance.config;
 
 import jakarta.jms.ConnectionFactory;
 import org.apache.activemq.ActiveMQConnectionFactory;
@@ -10,7 +10,7 @@ import org.springframework.jms.config.DefaultJmsListenerContainerFactory;
 public class JmsConfig {
 
     @Bean
-    public ConnectionFactory connectionFactory(BankingNodeProperties properties) {
+    public ConnectionFactory connectionFactory(FinanceNodeProperties properties) {
         ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(properties.getBrokerUrl());
         if (properties.getUsername() != null && !properties.getUsername().isBlank()) {
             connectionFactory.setUserName(properties.getUsername());

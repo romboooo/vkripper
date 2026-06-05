@@ -33,7 +33,7 @@ dependencies {
 }
 
 tasks.named<War>("war") {
-    archiveFileName.set("banking-node.war")
+    archiveFileName.set("finance-node.war")
 }
 
 tasks.named<org.springframework.boot.gradle.tasks.bundling.BootWar>("bootWar") {

@@ -7,7 +7,7 @@ import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
-import org.example.common.event.PaymentRequestedEvent;
+import org.example.common.event.FinancialOperationRequestedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -15,18 +15,18 @@ import org.springframework.stereotype.Component;
 import java.nio.charset.StandardCharsets;
 
 @Component
-public class MqttPaymentPublisher {
-    private static final Logger log = LoggerFactory.getLogger(MqttPaymentPublisher.class);
+public class MqttFinancialOperationPublisher {
+    private static final Logger log = LoggerFactory.getLogger(MqttFinancialOperationPublisher.class);
 
     private final ObjectMapper objectMapper;
     private final MqttProperties properties;
 
-    public MqttPaymentPublisher(ObjectMapper objectMapper, MqttProperties properties) {
+    public MqttFinancialOperationPublisher(ObjectMapper objectMapper, MqttProperties properties) {
         this.objectMapper = objectMapper;
         this.properties = properties;
     }
 
-    public void publishPaymentRequested(PaymentRequestedEvent event) {
+    public void publishFinancialOperationRequested(FinancialOperationRequestedEvent event) {
         try {
             String payload = objectMapper.writeValueAsString(event);
             MqttMessage message = new MqttMessage(payload.getBytes(StandardCharsets.UTF_8));
@@ -38,22 +38,22 @@ public class MqttPaymentPublisher {
                     new MemoryPersistence()
             );
             client.connect(connectOptions());
-            client.publish(properties.getPaymentTopic(), message);
+            client.publish(properties.getFinancialOperationTopic(), message);
             client.disconnect();
             client.close();
         } catch (JsonProcessingException | MqttException e) {
             if (e instanceof MqttException mqttException) {
                 log.error(
-                        "Failed to publish payment.requested event to brokerUrl={}, topic={}, reasonCode={}",
+                        "Failed to publish financial-operation.requested event to brokerUrl={}, topic={}, reasonCode={}",
                         properties.getBrokerUrl(),
-                        properties.getPaymentTopic(),
+                        properties.getFinancialOperationTopic(),
                         mqttException.getReasonCode(),
                         mqttException
                 );
             } else {
-                log.error("Failed to serialize payment.requested event", e);
+                log.error("Failed to serialize financial-operation.requested event", e);
             }
-            throw new IllegalStateException("Failed to publish payment.requested event", e);
+            throw new IllegalStateException("Failed to publish financial-operation.requested event", e);
         }
     }
 

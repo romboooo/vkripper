@@ -1,4 +1,4 @@
-package org.example.banking;
+package org.example.finance;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -9,15 +9,15 @@ import org.springframework.jms.annotation.EnableJms;
 
 @EnableJms
 @ConfigurationPropertiesScan
-@SpringBootApplication(scanBasePackages = {"org.example.banking", "org.example.common"})
-public class BankingNodeApplication extends SpringBootServletInitializer {
+@SpringBootApplication(scanBasePackages = {"org.example.finance", "org.example.common"})
+public class FinanceNodeApplication extends SpringBootServletInitializer {
 
     @Override
     protected SpringApplicationBuilder configure(SpringApplicationBuilder builder) {
-        return builder.sources(BankingNodeApplication.class);
+        return builder.sources(FinanceNodeApplication.class);
     }
 
     public static void main(String[] args) {
-        SpringApplication.run(BankingNodeApplication.class, args);
+        SpringApplication.run(FinanceNodeApplication.class, args);
     }
 }

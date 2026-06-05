@@ -1,4 +1,4 @@
-package org.example.banking.config;
+package org.example.finance.config;
 
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.Bean;

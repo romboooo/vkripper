@@ -1,4 +1,4 @@
-package org.example.banking.jira;
+package org.example.finance.jira;
 
 import org.example.jira.adapter.api.JiraIssueResult;
 

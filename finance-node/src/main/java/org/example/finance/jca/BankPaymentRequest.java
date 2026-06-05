@@ -1,9 +1,9 @@
-package org.example.banking.jca;
+package org.example.finance.jca;
 
 import java.math.BigDecimal;
 
 public record BankPaymentRequest(
-        Long paymentId,
+        Long operationId,
         Long orderId,
         Long userId,
         BigDecimal amount,
