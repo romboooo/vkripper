@@ -9,7 +9,7 @@ import java.util.UUID;
 public class BankEisClientStub implements BankEisClient {
     private final boolean forceFailure;
 
-    public BankEisClientStub(@Value("${app.finance.stub.force-failure:false}") boolean forceFailure) {
+    public BankEisClientStub(@Value("${app.bank.failure:false}") boolean forceFailure) {
         this.forceFailure = forceFailure;
     }
 

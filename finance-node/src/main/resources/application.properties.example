@@ -11,11 +11,7 @@ app.jms.username=
 app.jms.password=
 
 app.finance.processing-delay=3s
-app.finance.stub.force-failure=false
+app.bank.failure=false
 
-app.jira.enabled=false
-app.jira.base-url=
-app.jira.email=
-app.jira.api-token=
-app.jira.project-key=
-app.jira.issue-type=Task
+app.jira-adapter.enabled=true
+app.jira-adapter.connection-factory-jndi-name=java:/eis/JiraConnectionFactory
