@@ -3,6 +3,6 @@ server.port=8080
 
 app.mqtt.broker-url=tcp://localhost:1883
 app.mqtt.client-id=vkripper
-app.mqtt.payment-topic=VirtualTopic/payment/requested
+app.mqtt.financial-operation-topic=VirtualTopic/financial-operation/requested
 app.mqtt.username=
 app.mqtt.password=

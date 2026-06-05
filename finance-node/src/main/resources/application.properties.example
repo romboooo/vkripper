@@ -1,0 +1,13 @@
+spring.application.name=finance-node
+server.port=8180
+
+spring.datasource.jndi-name=java:/jdbc/XAPostgresDS
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
+
+app.jms.broker-url=tcp://localhost:61616
+app.jms.financial-operation-destination=Consumer.finance.VirtualTopic.financial-operation.requested
+app.jms.username=
+app.jms.password=
+
+app.finance.processing-delay=3s

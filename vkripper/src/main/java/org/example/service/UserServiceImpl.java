@@ -1,11 +1,18 @@
 package org.example.service;
 
 import lombok.RequiredArgsConstructor;
+import org.example.common.entity.FinancialOperation;
+import org.example.common.enums.FinancialOperationStatus;
+import org.example.common.enums.FinancialOperationType;
+import org.example.common.repository.FinancialOperationRepository;
+import org.example.dto.response.FinancialOperationResponse;
 import org.example.dto.response.UserResponse;
 import org.example.entity.Product;
 import org.example.entity.Review;
 import org.example.entity.Role;
 import org.example.entity.User;
+import org.example.messaging.FinancialOperationRequestedEventFactory;
+import org.example.messaging.MqttFinancialOperationPublisher;
 import org.example.repository.ProductRepository;
 import org.example.repository.ReviewRepository;
 import org.example.repository.UserRepository;
@@ -23,29 +30,50 @@ public class UserServiceImpl implements UserService{
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
     private final ReviewRepository reviewRepository;
+    private final FinancialOperationRepository financialOperationRepository;
+    private final FinancialOperationRequestedEventFactory financialOperationRequestedEventFactory;
+    private final MqttFinancialOperationPublisher mqttPaymentPublisher;
     private final TransactionTemplate transactionTemplate;
 
     @Override
     @PreAuthorize("hasAuthority('BUYER')")
-    @Transactional
-    public UserResponse addMoney(Long id, BigDecimal amount){
-        User user = getUserEntityById(id);
-        user.setBalance(user.getBalance().add(amount));
-        saveUser(user);
-        return UserResponse.fromUser(user);
+    public FinancialOperationResponse addMoney(Long id, BigDecimal amount){
+        getUserEntityById(id);
+        return createMoneyOperation(id, FinancialOperationType.TOP_UP, amount,
+                "Пополнение баланса принято в обработку");
     }
 
     @PreAuthorize("hasAuthority('BUYER') or hasAuthority('SELLER')")
     @Override
-    @Transactional
-    public UserResponse witdrawMoney(Long id, BigDecimal amount){
+    public FinancialOperationResponse witdrawMoney(Long id, BigDecimal amount){
         User user = getUserEntityById(id);
         if(user.getBalance().compareTo(amount) < 0){
             throw new IllegalArgumentException("недостаточно средств на счете");
         }
-        user.setBalance(user.getBalance().subtract(amount));
-        saveUser(user);
-        return UserResponse.fromUser(user);
+        return createMoneyOperation(id, FinancialOperationType.WITHDRAW, amount,
+                "Вывод средств принят в обработку");
+    }
+
+    private FinancialOperationResponse createMoneyOperation(
+            Long userId,
+            FinancialOperationType type,
+            BigDecimal amount,
+            String message
+    ) {
+        return transactionTemplate.execute(status -> {
+            FinancialOperation operation = new FinancialOperation();
+            operation.setType(type);
+            operation.setUserId(userId);
+            operation.setAmount(amount);
+            operation.setCurrency("RUB");
+            operation.setStatus(FinancialOperationStatus.PENDING);
+            operation = financialOperationRepository.save(operation);
+
+            mqttPaymentPublisher.publishFinancialOperationRequested(
+                    financialOperationRequestedEventFactory.create(operation)
+            );
+            return FinancialOperationResponse.fromOperation(operation, message);
+        });
     }
 
     @Override
@@ -126,4 +154,3 @@ public class UserServiceImpl implements UserService{
         });
     }
 }
-

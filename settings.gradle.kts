@@ -2,4 +2,4 @@ rootProject.name = "blps"
 
 include("common")
 include("vkripper")
-include("banking-node")
+include("finance-node")

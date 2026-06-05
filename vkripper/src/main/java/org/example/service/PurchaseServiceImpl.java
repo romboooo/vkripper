@@ -1,17 +1,21 @@
 package org.example.service;
 
 import lombok.RequiredArgsConstructor;
+import org.example.common.entity.FinancialOperation;
 import org.example.common.entity.Payment;
 import org.example.common.entity.PurchaseOrder;
+import org.example.common.enums.FinancialOperationStatus;
+import org.example.common.enums.FinancialOperationType;
 import org.example.common.enums.PaymentStatus;
 import org.example.common.enums.PurchaseOrderStatus;
+import org.example.common.repository.FinancialOperationRepository;
 import org.example.common.repository.PaymentRepository;
 import org.example.common.repository.PurchaseOrderRepository;
 import org.example.dto.request.PurchaseRequest;
 import org.example.dto.response.PurchaseResponse;
 import org.example.entity.*;
-import org.example.messaging.MqttPaymentPublisher;
-import org.example.messaging.PaymentRequestedEventFactory;
+import org.example.messaging.FinancialOperationRequestedEventFactory;
+import org.example.messaging.MqttFinancialOperationPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -26,8 +30,9 @@ public class PurchaseServiceImpl implements PurchaseService {
     private final TransactionTemplate transactionTemplate;
     private final PurchaseOrderRepository purchaseOrderRepository;
     private final PaymentRepository paymentRepository;
-    private final PaymentRequestedEventFactory paymentRequestedEventFactory;
-    private final MqttPaymentPublisher mqttPaymentPublisher;
+    private final FinancialOperationRepository financialOperationRepository;
+    private final FinancialOperationRequestedEventFactory financialOperationRequestedEventFactory;
+    private final MqttFinancialOperationPublisher mqttPaymentPublisher;
 
     @Override
     @PreAuthorize("hasAuthority('BUYER')")
@@ -111,6 +116,17 @@ public class PurchaseServiceImpl implements PurchaseService {
             payment.setStatus(PaymentStatus.PENDING);
             payment = paymentRepository.save(payment);
 
+            FinancialOperation operation = new FinancialOperation();
+            operation.setType(FinancialOperationType.PURCHASE);
+            operation.setUserId(persistentBuyer.getId());
+            operation.setCounterpartyUserId(sellerId);
+            operation.setOrderId(order.getId());
+            operation.setPaymentId(payment.getId());
+            operation.setAmount(totalCost);
+            operation.setCurrency("RUB");
+            operation.setStatus(FinancialOperationStatus.PENDING);
+            operation = financialOperationRepository.save(operation);
+
             int newAmount = currentAmount - amount;
             if (newAmount > 0) {
                 shoppingCartService.updateProductAmount(persistentBuyer.getId(),
@@ -119,7 +135,9 @@ public class PurchaseServiceImpl implements PurchaseService {
                 shoppingCartService.deleteCartEntity(persistentCart);
             }
 
-            mqttPaymentPublisher.publishPaymentRequested(paymentRequestedEventFactory.create(payment));
+            mqttPaymentPublisher.publishFinancialOperationRequested(
+                    financialOperationRequestedEventFactory.create(operation)
+            );
             return new PurchaseResponse(
                     order.getId(),
                     "PAYMENT_PENDING",

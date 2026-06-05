@@ -2,9 +2,9 @@
 
 Multi-module Spring Boot project:
 
-- `common` - shared contracts and shared payment/order persistence model.
+- `common` - shared contracts and shared finance/payment/order persistence model.
 - `vkripper` - internet shop application: REST API, auth, products, favorites, reviews, cart, purchase creation, Quartz, OpenAPI, JPA/JTA, MQTT publishing.
-- `banking-node` - separate payment node: JMS listener, payment processing service, `BankEisClient` JCA extension point, payment/order status updates.
+- `finance-node` - separate finance node: JMS listener, financial operation processing service, `BankEisClient` JCA extension point, balance/payment/order status updates.
 
 ## Build
 
@@ -12,35 +12,35 @@ Multi-module Spring Boot project:
 ./gradlew clean build
 ./gradlew :common:build
 ./gradlew :vkripper:build
-./gradlew :banking-node:build
+./gradlew :finance-node:build
 ```
 
 WAR artifacts:
 
 ```text
 vkripper/build/libs/vkripper.war
-banking-node/build/libs/banking-node.war
+finance-node/build/libs/finance-node.war
 ```
 
 ## Run locally
 
 ```bash
 ./gradlew :vkripper:bootRun
-./gradlew :banking-node:bootRun
+./gradlew :finance-node:bootRun
 ```
 
 Default application ports:
 
 ```text
 vkripper:      http://localhost:8080
-banking-node: http://localhost:8180
+finance-node: http://localhost:8180
 ```
 
 ## Messaging
 
-`vkripper` creates a purchase order and pending payment, then publishes `PaymentRequestedEvent` to MQTT topic `VirtualTopic/payment/requested`.
+`vkripper` creates pending financial operations for top-up, withdrawal, and internal-balance purchases, then publishes `FinancialOperationRequestedEvent` to MQTT topic `VirtualTopic/financial-operation/requested`.
 
-`banking-node` listens to JMS queue `Consumer.banking.VirtualTopic.payment.requested`, deserializes the same event from `common`, processes payment through `BankEisClient`, transfers buyer/seller balances, and updates payment/order statuses.
+`finance-node` listens to JMS queue `Consumer.finance.VirtualTopic.financial-operation.requested`, deserializes the same event from `common`, simulates asynchronous bank/ledger processing through `BankEisClient`, updates balances, and updates financial operation/payment/order statuses.
 
 The `VirtualTopic` naming pattern keeps MQTT publishing simple while the JMS side consumes from a real queue.
 
@@ -49,18 +49,19 @@ Main app MQTT properties:
 ```properties
 app.mqtt.broker-url=tcp://localhost:1883
 app.mqtt.client-id=vkripper
-app.mqtt.payment-topic=VirtualTopic/payment/requested
+app.mqtt.financial-operation-topic=VirtualTopic/financial-operation/requested
 app.mqtt.username=admin
 app.mqtt.password=admin
 ```
 
-Banking node JMS properties:
+Finance node JMS properties:
 
 ```properties
 app.jms.broker-url=tcp://localhost:61616
-app.jms.payment-destination=Consumer.banking.VirtualTopic.payment.requested
+app.jms.financial-operation-destination=Consumer.finance.VirtualTopic.financial-operation.requested
 app.jms.username=admin
 app.jms.password=admin
+app.finance.processing-delay=3s
 ```
 
 ActiveMQ Classic users for the Helios deployment:
