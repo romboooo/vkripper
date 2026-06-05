@@ -14,12 +14,15 @@ import org.example.finance.config.FinanceProcessingProperties;
 import org.example.finance.jca.BankEisClient;
 import org.example.finance.jca.BankPaymentRequest;
 import org.example.finance.jca.BankPaymentResult;
+import org.example.finance.jira.JiraIssueService;
 import org.example.finance.repository.UserBalanceRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 
+@Slf4j
 @Service
 public class FinancialOperationProcessingServiceImpl implements FinancialOperationProcessingService {
     private final FinancialOperationRepository financialOperationRepository;
@@ -28,6 +31,7 @@ public class FinancialOperationProcessingServiceImpl implements FinancialOperati
     private final BankEisClient bankEisClient;
     private final UserBalanceRepository userBalanceRepository;
     private final FinanceProcessingProperties financeProcessingProperties;
+    private final JiraIssueService jiraIssueService;
 
     public FinancialOperationProcessingServiceImpl(
             FinancialOperationRepository financialOperationRepository,
@@ -35,7 +39,8 @@ public class FinancialOperationProcessingServiceImpl implements FinancialOperati
             PurchaseOrderRepository purchaseOrderRepository,
             BankEisClient bankEisClient,
             UserBalanceRepository userBalanceRepository,
-            FinanceProcessingProperties financeProcessingProperties
+            FinanceProcessingProperties financeProcessingProperties,
+            JiraIssueService jiraIssueService
     ) {
         this.financialOperationRepository = financialOperationRepository;
         this.paymentRepository = paymentRepository;
@@ -43,6 +48,7 @@ public class FinancialOperationProcessingServiceImpl implements FinancialOperati
         this.bankEisClient = bankEisClient;
         this.userBalanceRepository = userBalanceRepository;
         this.financeProcessingProperties = financeProcessingProperties;
+        this.jiraIssueService = jiraIssueService;
     }
 
     @Override
@@ -148,6 +154,7 @@ public class FinancialOperationProcessingServiceImpl implements FinancialOperati
         operation.setProcessedAt(Instant.now());
         updateLinkedPayment(operation, PaymentStatus.FAILED, errorCode, errorMessage, null);
         updateLinkedOrderStatus(operation, PurchaseOrderStatus.PAYMENT_FAILED);
+        createJiraIssue(operation, errorCode, errorMessage);
     }
 
     private void markRetryPending(FinancialOperation operation, RuntimeException e) {
@@ -156,6 +163,7 @@ public class FinancialOperationProcessingServiceImpl implements FinancialOperati
         operation.setErrorCode("TECHNICAL_ERROR");
         operation.setErrorMessage(e.getMessage());
         updateLinkedPayment(operation, PaymentStatus.RETRY_PENDING, "TECHNICAL_ERROR", e.getMessage(), null);
+        createJiraIssue(operation, "TECHNICAL_ERROR", e.getMessage());
     }
 
     private void updateLinkedPaymentStatus(FinancialOperation operation, PaymentStatus status) {
@@ -201,5 +209,23 @@ public class FinancialOperationProcessingServiceImpl implements FinancialOperati
         PurchaseOrder order = purchaseOrderRepository.findById(operation.getOrderId())
                 .orElseThrow(() -> new IllegalArgumentException("Purchase order not found: " + operation.getOrderId()));
         order.setStatus(status);
+    }
+
+    private void createJiraIssue(FinancialOperation operation, String errorCode, String errorMessage) {
+        if (operation.getPaymentId() == null) {
+            return;
+        }
+
+        try {
+            jiraIssueService.createPaymentProblemIssue(
+                    operation.getPaymentId(),
+                    operation.getOrderId(),
+                    operation.getUserId(),
+                    errorCode,
+                    errorMessage
+            );
+        } catch (RuntimeException jiraException) {
+            log.warn("Failed to create Jira issue for paymentId={}", operation.getPaymentId(), jiraException);
+        }
     }
 }
