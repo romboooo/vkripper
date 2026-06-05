@@ -7,6 +7,7 @@ plugins {
 
 dependencies {
     implementation(project(":common"))
+    providedCompile(project(":jira-adapter"))
 
     implementation("org.springframework.boot:spring-boot-starter-web") {
         exclude("org.springframework.boot", "spring-boot-starter-tomcat")
@@ -17,6 +18,7 @@ dependencies {
     testAnnotationProcessor("org.projectlombok:lombok:1.18.32")
     providedRuntime("org.springframework.boot:spring-boot-starter-tomcat")
     compileOnly("jakarta.servlet:jakarta.servlet-api:6.0.0")
+    compileOnly("jakarta.resource:jakarta.resource-api:2.1.0")
     implementation("org.springframework.boot:spring-boot-starter-activemq")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-validation")
@@ -26,6 +28,7 @@ dependencies {
     implementation("org.springframework:spring-jms")
     runtimeOnly("org.jboss.slf4j:slf4j-jboss-logmanager:1.2.0.Final")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation(project(":jira-adapter"))
     testImplementation("com.h2database:h2:2.2.224")
 }
 

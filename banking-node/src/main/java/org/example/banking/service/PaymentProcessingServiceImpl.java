@@ -1,5 +1,6 @@
 package org.example.banking.service;
 
+import lombok.RequiredArgsConstructor;
 import org.example.banking.jca.BankEisClient;
 import org.example.banking.jca.BankPaymentRequest;
 import org.example.banking.jca.BankPaymentResult;
@@ -19,23 +20,12 @@ import java.time.Instant;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class PaymentProcessingServiceImpl implements PaymentProcessingService {
     private final PaymentRepository paymentRepository;
     private final PurchaseOrderRepository purchaseOrderRepository;
     private final BankEisClient bankEisClient;
     private final JiraIssueService jiraIssueService;
-
-    public PaymentProcessingServiceImpl(
-            PaymentRepository paymentRepository,
-            PurchaseOrderRepository purchaseOrderRepository,
-            BankEisClient bankEisClient,
-            JiraIssueService jiraIssueService
-    ) {
-        this.paymentRepository = paymentRepository;
-        this.purchaseOrderRepository = purchaseOrderRepository;
-        this.bankEisClient = bankEisClient;
-        this.jiraIssueService = jiraIssueService;
-    }
 
     @Override
     @Transactional

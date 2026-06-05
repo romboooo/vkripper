@@ -16,7 +16,7 @@ public class BankEisClientStub implements BankEisClient {
     @Override
     public BankPaymentResult processPayment(BankPaymentRequest request) {
         if (forceFailure) {
-            return BankPaymentResult.failed("STUB_FORCED_FAILURE", "Forced banking failure for Jira integration test");
+            return BankPaymentResult.failed("STUB_FORCED_FAILURE", "banking operation failed");
         }
 
         return BankPaymentResult.success("stub-" + UUID.randomUUID());

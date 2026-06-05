@@ -1,5 +1,7 @@
 package org.example.banking.jira;
 
+import org.example.jira.adapter.api.JiraIssueResult;
+
 public interface JiraIssueService {
 
     JiraIssueResult createPaymentProblemIssue(
