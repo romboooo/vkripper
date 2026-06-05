@@ -8,6 +8,7 @@ import org.example.dto.request.MoneyRequest;
 import org.example.dto.request.TopUpRequest;
 import org.example.dto.request.UserRequest;
 import org.example.dto.request.WithdrawRequest;
+import org.example.dto.response.FinancialOperationResponse;
 import org.example.dto.response.UserResponse;
 import org.example.security.CustomUserDetails;
 import org.example.service.UserService;
@@ -24,7 +25,7 @@ public class UserController {
 
     @PostMapping("/addMoney")
     @Operation(summary = "пополнить баланс", description = "пополняет баланс конкретного покупателя")
-    public ResponseEntity<UserResponse> addMoney(
+    public ResponseEntity<FinancialOperationResponse> addMoney(
             @Valid @RequestBody TopUpRequest topUpRequest,
             @AuthenticationPrincipal CustomUserDetails currentUser){
         return ResponseEntity.ok(userService.addMoney(currentUser.getId(), topUpRequest.getMoneyAmount()));
@@ -33,7 +34,7 @@ public class UserController {
 
     @PostMapping("/withdrawMoney")
     @Operation(summary = "вывести деньги", description = "выводит деньги со счета конкретного покупателя")
-    public ResponseEntity<UserResponse> withdrawMoney(
+    public ResponseEntity<FinancialOperationResponse> withdrawMoney(
             @Valid @RequestBody WithdrawRequest withdrawRequest,
             @AuthenticationPrincipal CustomUserDetails currentUser){
         return ResponseEntity.ok(userService.witdrawMoney(currentUser.getId(),withdrawRequest.getMoneyAmount()));
