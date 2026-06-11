@@ -212,20 +212,14 @@ public class FinancialOperationProcessingServiceImpl implements FinancialOperati
     }
 
     private void createJiraIssue(FinancialOperation operation, String errorCode, String errorMessage) {
-        if (operation.getPaymentId() == null) {
-            return;
-        }
-
         try {
-            jiraIssueService.createPaymentProblemIssue(
-                    operation.getPaymentId(),
-                    operation.getOrderId(),
-                    operation.getUserId(),
+            jiraIssueService.createFinancialOperationProblemIssue(
+                    operation,
                     errorCode,
                     errorMessage
             );
         } catch (RuntimeException jiraException) {
-            log.warn("Failed to create Jira issue for paymentId={}", operation.getPaymentId(), jiraException);
+            log.warn("Failed to create Jira issue for operationId={}", operation.getId(), jiraException);
         }
     }
 }

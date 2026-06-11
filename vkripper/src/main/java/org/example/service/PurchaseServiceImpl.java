@@ -14,8 +14,7 @@ import org.example.common.repository.PurchaseOrderRepository;
 import org.example.dto.request.PurchaseRequest;
 import org.example.dto.response.PurchaseResponse;
 import org.example.entity.*;
-import org.example.messaging.FinancialOperationRequestedEventFactory;
-import org.example.messaging.MqttFinancialOperationPublisher;
+import org.example.messaging.FinancialOperationEventPublisher;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -31,8 +30,7 @@ public class PurchaseServiceImpl implements PurchaseService {
     private final PurchaseOrderRepository purchaseOrderRepository;
     private final PaymentRepository paymentRepository;
     private final FinancialOperationRepository financialOperationRepository;
-    private final FinancialOperationRequestedEventFactory financialOperationRequestedEventFactory;
-    private final MqttFinancialOperationPublisher mqttPaymentPublisher;
+    private final FinancialOperationEventPublisher financialOperationEventPublisher;
 
     @Override
     @PreAuthorize("hasAuthority('BUYER')")
@@ -135,9 +133,7 @@ public class PurchaseServiceImpl implements PurchaseService {
                 shoppingCartService.deleteCartEntity(persistentCart);
             }
 
-            mqttPaymentPublisher.publishFinancialOperationRequested(
-                    financialOperationRequestedEventFactory.create(operation)
-            );
+            financialOperationEventPublisher.publishAfterCommit(operation);
             return new PurchaseResponse(
                     order.getId(),
                     "PAYMENT_PENDING",

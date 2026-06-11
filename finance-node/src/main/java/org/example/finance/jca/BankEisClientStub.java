@@ -9,14 +9,14 @@ import java.util.UUID;
 public class BankEisClientStub implements BankEisClient {
     private final boolean forceFailure;
 
-    public BankEisClientStub(@Value("${app.finance.stub.force-failure:false}") boolean forceFailure) {
+    public BankEisClientStub(@Value("${app.bank.failure:false}") boolean forceFailure) {
         this.forceFailure = forceFailure;
     }
 
     @Override
     public BankPaymentResult processPayment(BankPaymentRequest request) {
         if (forceFailure) {
-            return BankPaymentResult.failed("STUB_FORCED_FAILURE", "Forced banking failure for Jira integration test");
+            return BankPaymentResult.failed("STUB_FORCED_FAILURE", "banking operation failed");
         }
 
         return BankPaymentResult.success("stub-" + UUID.randomUUID());

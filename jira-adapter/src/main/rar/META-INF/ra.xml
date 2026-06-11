@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<connector xmlns="https://jakarta.ee/xml/ns/jakartaee"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/connector_2_1.xsd"
+           version="2.1">
+    <display-name>Jira JCA Adapter</display-name>
+    <vendor-name>org.example</vendor-name>
+    <eis-type>Jira REST API</eis-type>
+    <resourceadapter-version>1.0</resourceadapter-version>
+
+    <resourceadapter>
+        <resourceadapter-class>org.example.jira.adapter.spi.JiraResourceAdapter</resourceadapter-class>
+
+        <outbound-resourceadapter>
+            <connection-definition>
+                <managedconnectionfactory-class>
+                    org.example.jira.adapter.spi.JiraManagedConnectionFactory
+                </managedconnectionfactory-class>
+                <config-property>
+                    <config-property-name>enabled</config-property-name>
+                    <config-property-type>java.lang.Boolean</config-property-type>
+                    <config-property-value>false</config-property-value>
+                </config-property>
+                <config-property>
+                    <config-property-name>baseUrl</config-property-name>
+                    <config-property-type>java.lang.String</config-property-type>
+                </config-property>
+                <config-property>
+                    <config-property-name>email</config-property-name>
+                    <config-property-type>java.lang.String</config-property-type>
+                </config-property>
+                <config-property>
+                    <config-property-name>apiToken</config-property-name>
+                    <config-property-type>java.lang.String</config-property-type>
+                </config-property>
+                <config-property>
+                    <config-property-name>projectKey</config-property-name>
+                    <config-property-type>java.lang.String</config-property-type>
+                </config-property>
+                <config-property>
+                    <config-property-name>issueType</config-property-name>
+                    <config-property-type>java.lang.String</config-property-type>
+                    <config-property-value>Task</config-property-value>
+                </config-property>
+                <connectionfactory-interface>
+                    org.example.jira.adapter.api.JiraConnectionFactory
+                </connectionfactory-interface>
+                <connectionfactory-impl-class>
+                    org.example.jira.adapter.spi.JiraConnectionFactoryImpl
+                </connectionfactory-impl-class>
+                <connection-interface>
+                    org.example.jira.adapter.api.JiraConnection
+                </connection-interface>
+                <connection-impl-class>
+                    org.example.jira.adapter.spi.JiraConnectionImpl
+                </connection-impl-class>
+            </connection-definition>
+            <transaction-support>NoTransaction</transaction-support>
+            <reauthentication-support>false</reauthentication-support>
+        </outbound-resourceadapter>
+    </resourceadapter>
+</connector>

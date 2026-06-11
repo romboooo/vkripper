@@ -11,8 +11,7 @@ import org.example.entity.Product;
 import org.example.entity.Review;
 import org.example.entity.Role;
 import org.example.entity.User;
-import org.example.messaging.FinancialOperationRequestedEventFactory;
-import org.example.messaging.MqttFinancialOperationPublisher;
+import org.example.messaging.FinancialOperationEventPublisher;
 import org.example.repository.ProductRepository;
 import org.example.repository.ReviewRepository;
 import org.example.repository.UserRepository;
@@ -31,8 +30,7 @@ public class UserServiceImpl implements UserService{
     private final ProductRepository productRepository;
     private final ReviewRepository reviewRepository;
     private final FinancialOperationRepository financialOperationRepository;
-    private final FinancialOperationRequestedEventFactory financialOperationRequestedEventFactory;
-    private final MqttFinancialOperationPublisher mqttPaymentPublisher;
+    private final FinancialOperationEventPublisher financialOperationEventPublisher;
     private final TransactionTemplate transactionTemplate;
 
     @Override
@@ -69,9 +67,7 @@ public class UserServiceImpl implements UserService{
             operation.setStatus(FinancialOperationStatus.PENDING);
             operation = financialOperationRepository.save(operation);
 
-            mqttPaymentPublisher.publishFinancialOperationRequested(
-                    financialOperationRequestedEventFactory.create(operation)
-            );
+            financialOperationEventPublisher.publishAfterCommit(operation);
             return FinancialOperationResponse.fromOperation(operation, message);
         });
     }

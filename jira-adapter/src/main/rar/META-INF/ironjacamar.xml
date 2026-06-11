@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ironjacamar xmlns="urn:jboss:ironjacamar:1.0">
+    <connection-definitions>
+        <connection-definition
+                class-name="org.example.jira.adapter.spi.JiraManagedConnectionFactory"
+                jndi-name="java:/eis/JiraConnectionFactory"
+                enabled="true"
+                use-java-context="true"
+                pool-name="JiraConnectionFactory">
+            <config-property name="enabled">${env.APP_JIRA_ENABLED:true}</config-property>
+            <config-property name="baseUrl">${env.APP_JIRA_BASE_URL:}</config-property>
+            <config-property name="email">${env.APP_JIRA_EMAIL:}</config-property>
+            <config-property name="apiToken">${env.APP_JIRA_API_TOKEN:}</config-property>
+            <config-property name="projectKey">${env.APP_JIRA_PROJECT_KEY:}</config-property>
+            <config-property name="issueType">${env.APP_JIRA_ISSUE_TYPE:Task}</config-property>
+        </connection-definition>
+    </connection-definitions>
+</ironjacamar>
