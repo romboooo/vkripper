@@ -5,7 +5,10 @@ import jakarta.jms.BytesMessage;
 import jakarta.jms.JMSException;
 import jakarta.jms.Message;
 import jakarta.jms.TextMessage;
+import org.example.common.entity.FinancialOperation;
 import org.example.common.event.FinancialOperationRequestedEvent;
+import org.example.common.repository.FinancialOperationRepository;
+import org.example.finance.camunda.CamundaMessageClient;
 import org.example.finance.service.FinancialOperationProcessingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,13 +23,19 @@ public class FinancialOperationRequestedListener {
 
     private final ObjectMapper objectMapper;
     private final FinancialOperationProcessingService financialOperationProcessingService;
+    private final FinancialOperationRepository financialOperationRepository;
+    private final CamundaMessageClient camundaMessageClient;
 
     public FinancialOperationRequestedListener(
             ObjectMapper objectMapper,
-            FinancialOperationProcessingService financialOperationProcessingService
+            FinancialOperationProcessingService financialOperationProcessingService,
+            FinancialOperationRepository financialOperationRepository,
+            CamundaMessageClient camundaMessageClient
     ) {
         this.objectMapper = objectMapper;
         this.financialOperationProcessingService = financialOperationProcessingService;
+        this.financialOperationRepository = financialOperationRepository;
+        this.camundaMessageClient = camundaMessageClient;
     }
 
     @JmsListener(destination = "${app.jms.financial-operation-destination:Consumer.finance.VirtualTopic.financial-operation.requested}")
@@ -41,9 +50,34 @@ public class FinancialOperationRequestedListener {
                     event.type()
             );
             financialOperationProcessingService.process(event);
+            correlateFinancialOperationFinished(event.operationId());
         } catch (Exception e) {
             log.error("Failed to handle financial-operation.requested message", e);
             throw new IllegalStateException("Failed to handle financial-operation.requested message", e);
+        }
+    }
+
+    private void correlateFinancialOperationFinished(Long operationId) {
+        try {
+            FinancialOperation operation = financialOperationRepository.findById(operationId)
+                    .orElseThrow(() -> new IllegalArgumentException("Financial operation not found: " + operationId));
+            camundaMessageClient.correlateFinancialOperationFinished(
+                    operation.getId(),
+                    operation.getStatus().name(),
+                    operation.getErrorCode(),
+                    operation.getErrorMessage()
+            );
+            log.info(
+                    "Correlated Camunda message FinancialOperationFinished for operationId={}, status={}",
+                    operation.getId(),
+                    operation.getStatus()
+            );
+        } catch (RuntimeException e) {
+            log.warn(
+                    "Failed to correlate Camunda message FinancialOperationFinished for operationId={}. Financial operation processing remains completed.",
+                    operationId,
+                    e
+            );
         }
     }
 
