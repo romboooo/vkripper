@@ -68,6 +68,32 @@ public class FavoriteServiceImpl implements FavoriteService {
         return ProductResponse.fromProduct(savedFavorite.getProduct());
     }
 
+    public void validateFavoriteAddForProcess(Long userId, Long productId) {
+        Product product = productService.getProductEntityById(productId);
+        User user = userService.getUserEntityById(userId);
+
+        if (!product.isAvailable()) {
+            throw new RuntimeException("Product with id " + productId + " is not available");
+        }
+        if (!favoriteRepository.findByUserAndProduct(user, product).isEmpty()) {
+            throw new RuntimeException("Product with id " + productId + " is already in favorites");
+        }
+    }
+
+    @Transactional
+    public ProductResponse addToFavoriteForProcess(Long userId, Long productId) {
+        validateFavoriteAddForProcess(userId, productId);
+        Product product = productService.getProductEntityById(productId);
+        User user = userService.getUserEntityById(userId);
+
+        Favorite favorite = new Favorite();
+        favorite.setUser(user);
+        favorite.setProduct(product);
+
+        Favorite savedFavorite = favoriteRepository.save(favorite);
+        return ProductResponse.fromProduct(savedFavorite.getProduct());
+    }
+
     @Override
     @PreAuthorize("hasAuthority('BUYER') or hasAuthority('MODERATOR') or hasAuthority('ADMIN')")
     @Transactional
@@ -79,6 +105,21 @@ public class FavoriteServiceImpl implements FavoriteService {
             );
         }
         favoriteRepository.deleteAll(favorites);
+    }
+
+    public void validateFavoriteRemoveForProcess(Long userId, Long productId) {
+        userService.getUserEntityById(userId);
+        if (favoriteRepository.findByUserIdAndProductId(userId, productId).isEmpty()) {
+            throw new RuntimeException(
+                    "Favorite product with id " + productId + " for userId " + userId + " not found"
+            );
+        }
+    }
+
+    @Transactional
+    public void deleteFromFavoriteForProcess(Long userId, Long productId) {
+        validateFavoriteRemoveForProcess(userId, productId);
+        favoriteRepository.deleteAll(favoriteRepository.findByUserIdAndProductId(userId, productId));
     }
 
     @Override

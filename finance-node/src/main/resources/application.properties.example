@@ -13,8 +13,8 @@ app.jms.password=
 app.finance.processing-delay=3s
 app.bank.failure=false
 
-app.jira-adapter.enabled=true
+app.jira-adapter.enabled=${APP_JIRA_ADAPTER_ENABLED:false}
 app.jira-adapter.connection-factory-jndi-name=java:/eis/JiraConnectionFactory
 
-app.camunda.base-url=http://localhost:18080/engine-rest
-app.camunda.financial-operation-finished-message=FinancialOperationFinished
+app.camunda.base-url=${APP_CAMUNDA_BASE_URL:http://localhost:18080/engine-rest}
+app.camunda.financial-operation-finished-message=${APP_CAMUNDA_FINANCIAL_OPERATION_FINISHED_MESSAGE:FinancialOperationFinished}

@@ -16,7 +16,7 @@ public class JiraAdapterConfig {
             prefix = "app.jira-adapter",
             name = "enabled",
             havingValue = "true",
-            matchIfMissing = true
+            matchIfMissing = false
     )
     public JiraConnectionFactory jiraConnectionFactory(JiraAdapterProperties properties) {
         try {

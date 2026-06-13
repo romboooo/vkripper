@@ -74,6 +74,33 @@ public class ShoppingCartServiceImpl implements ShoppingCartService{
         return ShoppingCartResponse.fromShoppingCart(cartItem);
     }
 
+    public void validateCartAddForProcess(Long userId, Long productId) {
+        Product product = productService.getProductEntityById(productId);
+        userService.getUserEntityById(userId);
+
+        if (!product.isAvailable()) {
+            throw new RuntimeException("Товар недоступен");
+        }
+        if (shoppingCartRepository.existsByUserIdAndProductId(userId, productId)) {
+            throw new RuntimeException("Товар уже в корзине");
+        }
+    }
+
+    @Transactional
+    public ShoppingCartResponse addToShoppingCartForProcess(Long userId, Long productId) {
+        validateCartAddForProcess(userId, productId);
+
+        User user = userService.getUserEntityById(userId);
+        Product product = productService.getProductEntityById(productId);
+        ShoppingCart cartItem = new ShoppingCart();
+        cartItem.setUser(user);
+        cartItem.setProduct(product);
+        cartItem.setAmountInCart(1);
+        shoppingCartRepository.save(cartItem);
+        updateShoppingCart(user);
+        return ShoppingCartResponse.fromShoppingCart(cartItem);
+    }
+
     @Override
     @PreAuthorize("hasAuthority('BUYER')")
     @Transactional
@@ -83,6 +110,22 @@ public class ShoppingCartServiceImpl implements ShoppingCartService{
         if (cartItems.isEmpty()) {
             throw new RuntimeException("Товар не найден в корзине");
         }
+        shoppingCartRepository.deleteAll(cartItems);
+        updateShoppingCart(user);
+    }
+
+    public void validateCartRemoveForProcess(Long userId, Long productId) {
+        userService.getUserEntityById(userId);
+        if (shoppingCartRepository.findByUserIdAndProductId(userId, productId).isEmpty()) {
+            throw new RuntimeException("Товар не найден в корзине");
+        }
+    }
+
+    @Transactional
+    public void deleteFromShoppingCartForProcess(Long userId, Long productId) {
+        validateCartRemoveForProcess(userId, productId);
+        User user = userService.getUserEntityById(userId);
+        List<ShoppingCart> cartItems = shoppingCartRepository.findByUserIdAndProductId(userId, productId);
         shoppingCartRepository.deleteAll(cartItems);
         updateShoppingCart(user);
     }
@@ -128,6 +171,27 @@ public class ShoppingCartServiceImpl implements ShoppingCartService{
         }
 
         ShoppingCart cartItem = cartItems.get(0);
+        cartItem.setAmountInCart(newAmount);
+        shoppingCartRepository.save(cartItem);
+        updateShoppingCart(user);
+        return ShoppingCartResponse.fromShoppingCart(cartItem);
+    }
+
+    public void validateCartUpdateForProcess(Long userId, Long productId, int newAmount) {
+        if (newAmount < 1) {
+            throw new RuntimeException("Количество должно быть больше 0");
+        }
+        userService.getUserEntityById(userId);
+        if (shoppingCartRepository.findByUserIdAndProductId(userId, productId).isEmpty()) {
+            throw new RuntimeException("Товар не найден в корзине");
+        }
+    }
+
+    @Transactional
+    public ShoppingCartResponse updateProductAmountForProcess(Long userId, Long productId, int newAmount) {
+        validateCartUpdateForProcess(userId, productId, newAmount);
+        User user = userService.getUserEntityById(userId);
+        ShoppingCart cartItem = shoppingCartRepository.findByUserIdAndProductId(userId, productId).get(0);
         cartItem.setAmountInCart(newAmount);
         shoppingCartRepository.save(cartItem);
         updateShoppingCart(user);

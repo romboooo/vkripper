@@ -14,7 +14,7 @@ import org.springframework.context.annotation.Configuration;
         prefix = "app.quartz.cleanup-old-carts",
         name = "enabled",
         havingValue = "true",
-        matchIfMissing = true
+        matchIfMissing = false
 )
 public class QuartzConfig {
     @Bean
