@@ -111,7 +111,6 @@ public class PurchaseServiceImpl implements PurchaseService {
         }
 
         return transactionTemplate.execute(status -> {
-            // TODO: Store Camunda businessKey/processInstanceId with the order to make this step idempotent.
             User persistentBuyer = userService.getUserEntityById(buyerId);
             ShoppingCart persistentCart = shoppingCartService.getCartEntityById(cartItemId);
 
@@ -182,7 +181,6 @@ public class PurchaseServiceImpl implements PurchaseService {
         }
 
         transactionTemplate.executeWithoutResult(status -> {
-            // TODO: Add a published flag or Camunda businessKey to prevent duplicate broker messages on task retry.
             FinancialOperation operation = financialOperationRepository.findById(operationId)
                     .orElseThrow(() -> new RuntimeException("Финансовая операция не найдена: " + operationId));
             financialOperationEventPublisher.publishAfterCommit(operation);

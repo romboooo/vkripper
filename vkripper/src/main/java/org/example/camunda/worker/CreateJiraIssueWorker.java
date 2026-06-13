@@ -74,7 +74,6 @@ public class CreateJiraIssueWorker {
 
         JiraIssueResult result;
         try {
-            // TODO: Store jiraIssueKey in process/domain state before creating a new issue to avoid duplicates on task retry.
             result = jiraIssueService.createFinancialOperationProblemIssue(
                     orderId,
                     paymentId,
