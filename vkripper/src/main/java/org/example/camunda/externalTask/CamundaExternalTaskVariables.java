@@ -2,6 +2,8 @@ package org.example.camunda.externalTask;
 
 import org.example.camunda.CamundaVariableValue;
 
+import java.math.BigDecimal;
+
 public final class CamundaExternalTaskVariables {
     private CamundaExternalTaskVariables() {
     }
@@ -58,6 +60,28 @@ public final class CamundaExternalTaskVariables {
             return stringValue;
         }
         throw new IllegalArgumentException("Invalid String variable: " + name);
+    }
+
+    public static Boolean booleanVariable(CamundaExternalTask task, String name) {
+        Object value = requiredValue(task, name);
+        if (value instanceof Boolean booleanValue) {
+            return booleanValue;
+        }
+        throw new IllegalArgumentException("Invalid Boolean variable: " + name);
+    }
+
+    public static BigDecimal bigDecimalVariable(CamundaExternalTask task, String name) {
+        Object value = requiredValue(task, name);
+        if (value instanceof BigDecimal bigDecimal) {
+            return bigDecimal;
+        }
+        if (value instanceof Number number) {
+            return BigDecimal.valueOf(number.doubleValue());
+        }
+        if (value instanceof String stringValue && !stringValue.isBlank()) {
+            return new BigDecimal(stringValue);
+        }
+        throw new IllegalArgumentException("Invalid BigDecimal variable: " + name);
     }
 
     private static Object requiredValue(CamundaExternalTask task, String name) {

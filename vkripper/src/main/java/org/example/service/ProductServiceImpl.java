@@ -78,11 +78,58 @@ public class ProductServiceImpl implements ProductService{
         return ProductResponse.fromProduct(saved);
     }
 
+    public void validateProductCreateForProcess(String role, ProductRequest request) {
+        if (!hasRole(role, "SELLER")) {
+            throw new RuntimeException("Недостаточно прав для создания товара");
+        }
+        if (request.getPrice() == null || request.getPrice().signum() < 1) {
+            throw new RuntimeException("Цена товара должна быть больше 0");
+        }
+        if (request.getName() == null || request.getName().isBlank()) {
+            throw new RuntimeException("Название товара обязательно");
+        }
+        if (request.getProductGroup() == null) {
+            throw new RuntimeException("Группа товара обязательна");
+        }
+    }
+
+    @Transactional
+    public ProductResponse createProductForProcess(Long userId, String role, ProductRequest request) {
+        validateProductCreateForProcess(role, request);
+        Product product = new Product();
+        product.setName(request.getName());
+        product.setPrice(request.getPrice());
+        product.setAvailable(request.isAvailable());
+        product.setProductGroup(request.getProductGroup());
+        product.setSeller(userService.getUserEntityById(userId));
+
+        return ProductResponse.fromProduct(productRepository.save(product));
+    }
+
     @Override
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('MODERATOR') or " +
             "(hasAuthority('SELLER') and @productServiceImpl.getProductEntityById(#productId).seller.id == #userId)")
     @Transactional
     public void deleteProduct(Long userId, Long productId){
         productRepository.deleteById(productId);
+    }
+
+    public void validateProductDeleteForProcess(Long userId, String role, Long productId) {
+        Product product = getProductEntityById(productId);
+        boolean adminOrModerator = hasRole(role, "ADMIN") || hasRole(role, "MODERATOR");
+        boolean ownerSeller = hasRole(role, "SELLER") && product.getSeller().getId() == userId;
+        if (!adminOrModerator && !ownerSeller) {
+            throw new RuntimeException("Недостаточно прав для удаления товара");
+        }
+    }
+
+    @Transactional
+    public void deleteProductForProcess(Long userId, String role, Long productId) {
+        validateProductDeleteForProcess(userId, role, productId);
+        productRepository.deleteById(productId);
+    }
+
+    private boolean hasRole(String actualRole, String expectedRole) {
+        return expectedRole.equals(actualRole);
     }
 }
