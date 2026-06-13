@@ -3,15 +3,13 @@ package org.example.service;
 import org.example.common.entity.FinancialOperation;
 import org.example.common.entity.Payment;
 import org.example.common.entity.PurchaseOrder;
-import org.example.common.event.FinancialOperationRequestedEvent;
 import org.example.common.repository.FinancialOperationRepository;
 import org.example.common.repository.PaymentRepository;
 import org.example.common.repository.PurchaseOrderRepository;
 import org.example.dto.request.PurchaseRequest;
 import org.example.dto.response.PurchaseResponse;
 import org.example.entity.*;
-import org.example.messaging.FinancialOperationRequestedEventFactory;
-import org.example.messaging.MqttFinancialOperationPublisher;
+import org.example.messaging.FinancialOperationEventPublisher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,9 +19,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.math.BigDecimal;
-import java.time.Instant;
-import java.util.UUID;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -51,10 +46,7 @@ class PurchaseServiceImplTest {
     private FinancialOperationRepository financialOperationRepository;
 
     @Mock
-    private FinancialOperationRequestedEventFactory financialOperationRequestedEventFactory;
-
-    @Mock
-    private MqttFinancialOperationPublisher mqttPaymentPublisher;
+    private FinancialOperationEventPublisher financialOperationEventPublisher;
 
     @InjectMocks
     private PurchaseServiceImpl purchaseService;
@@ -114,20 +106,6 @@ class PurchaseServiceImplTest {
             operation.setId(888L);
             return operation;
         });
-        FinancialOperationRequestedEvent event = new FinancialOperationRequestedEvent(
-                UUID.randomUUID(),
-                888L,
-                org.example.common.enums.FinancialOperationType.PURCHASE,
-                1L,
-                99L,
-                555L,
-                777L,
-                new BigDecimal("200.00"),
-                "RUB",
-                Instant.now()
-        );
-        when(financialOperationRequestedEventFactory.create(any(FinancialOperation.class))).thenReturn(event);
-
         PurchaseResponse response = purchaseService.createPurchase(userId, request);
 
         assertThat(response.getOrderId()).isEqualTo(555L);
@@ -139,7 +117,7 @@ class PurchaseServiceImplTest {
         verify(purchaseOrderRepository).save(any(PurchaseOrder.class));
         verify(paymentRepository).save(any(Payment.class));
         verify(financialOperationRepository).save(any(FinancialOperation.class));
-        verify(mqttPaymentPublisher).publishFinancialOperationRequested(event);
+        verify(financialOperationEventPublisher).publishAfterCommit(any(FinancialOperation.class));
         verify(shoppingCartService).deleteCartEntity(cartItem);
         verify(userService, never()).saveUser(any());
     }

@@ -5,10 +5,17 @@ import org.quartz.JobDetail;
 import org.quartz.SimpleScheduleBuilder;
 import org.quartz.Trigger;
 import org.quartz.TriggerBuilder;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
+@ConditionalOnProperty(
+        prefix = "app.quartz.cleanup-old-carts",
+        name = "enabled",
+        havingValue = "true",
+        matchIfMissing = true
+)
 public class QuartzConfig {
     @Bean
     public JobDetail shoppingCartCleanupJobDetail() {

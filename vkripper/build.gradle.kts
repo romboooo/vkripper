@@ -7,6 +7,7 @@ plugins {
 
 dependencies {
     implementation(project(":common"))
+    providedCompile(project(":jira-adapter"))
 
     implementation("org.springframework.boot:spring-boot-starter-web") {
         exclude("org.springframework.boot", "spring-boot-starter-tomcat")
@@ -14,6 +15,7 @@ dependencies {
     providedRuntime("org.springframework.boot:spring-boot-starter-tomcat")
 
     compileOnly("jakarta.servlet:jakarta.servlet-api:6.0.0")
+    compileOnly("jakarta.resource:jakarta.resource-api:2.1.0")
     testImplementation("jakarta.servlet:jakarta.servlet-api:6.0.0")
     runtimeOnly("org.postgresql:postgresql")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")

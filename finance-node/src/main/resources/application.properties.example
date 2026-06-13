@@ -15,3 +15,6 @@ app.bank.failure=false
 
 app.jira-adapter.enabled=true
 app.jira-adapter.connection-factory-jndi-name=java:/eis/JiraConnectionFactory
+
+app.camunda.base-url=http://localhost:18080/engine-rest
+app.camunda.financial-operation-finished-message=FinancialOperationFinished
